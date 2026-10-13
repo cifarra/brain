@@ -24,7 +24,7 @@ def test_argv_per_profile(profile):
     s2 = build_argv(reg, p.backends["s2"], port=8792, **kw)
     assert s2 == ["llama-server", "-m", "/models/gguf/qwen3.5-9b/Qwen3.5-9B-Q4_K_M.gguf",
                   "--mmproj", "/models/gguf/qwen3.5-9b/mmproj-F16.gguf",
-                  "--lora", "/models/adapters/abliteration-wangzhang-r1.gguf", "--lora-init-without-apply",
+                  "--lora", "/models/adapters/abliteration-wangzhang-r1.gguf", "--lora-init-without-apply", "--cache-ram", "0",
                   "-c", "16384", "-b", "2048", "-ub", "512", "-np", "1", "-fa", "on", "-ngl", "999",
                   "--ctx-checkpoints", "4", "-ctk", "f16", "-ctv", "f16", "--reasoning-format", "deepseek",
                   "--jinja", "--host", "127.0.0.1", "--port", "8792", "--no-webui", "--metrics"]
@@ -36,7 +36,7 @@ def test_argv_misc_flags():
     argv = build_argv(reg, be, binary="/opt/llama-server", models_dir=Path("/m"), host="127.0.0.1", port=1)
     assert "--no-jinja" in argv and argv[argv.index("-ngl") + 1] == "20"
     assert argv[argv.index("--reasoning-budget") + 1] == "128"
-    assert "--lora-init-without-apply" not in argv
+    assert "--lora-init-without-apply" not in argv and "--cache-ram" not in argv
 
 
 def test_unknown_arg_rejected():

@@ -273,7 +273,7 @@ artifact:
   arch: qwen35
   file: adapters/abliteration-wangzhang-r1.gguf
   sha256: <...>
-  size_mb: 1.3
+  size_mb: 2.45                    # f32: the f16 file fails the decode-speed gate (0.951 vs 0.973)
 target_modules: [linear_attn.out_proj, mlp.down_proj, self_attn.o_proj]
 rank: 1
 scale: {default: 1.0, min: 0.0, max: 1.5}
@@ -372,7 +372,9 @@ This costs one extra S1 call, a few hundred ms. A learned router (a classifier, 
 ### Mapping onto llama.cpp (Phase A)
 
 **Preload**
-- Every generation adapter listed in the profile is passed to S2 as `--lora <file>`, in profile order, together with `--lora-init-without-apply`.
+- Every generation adapter listed in the profile is passed to S2 as `--lora <file>`, in profile order, together with `--lora-init-without-apply` and `--cache-ram 0`.
+  - `--cache-ram 0` is required. At b11580 the RAM prompt cache is keyed by tokens only, so a request can resume a state computed under a different LoRA scale. With the cache on, scale-0 output matched stock on only 17/45 prompts; with it off, 45/45.
+  - The gateway must send an explicit scale for every loaded adapter on every request. A request without a `lora` field runs at scale 1.0, even with `--lora-init-without-apply`.
 - At startup the gateway reads `GET /lora-adapters` and verifies the name → `id` map against the file paths.
 
 **Per request**
@@ -416,7 +418,7 @@ This costs one extra S1 call, a few hundred ms. A learned router (a classifier, 
    - Tooling: PEFT + TRL, or Unsloth (both Apache-2.0).
    - Start with rank 8-32 on the attention and MLP projections, and record the target modules.
    - If the adapter is trained with abliteration applied, declare `requires: [abliteration]`.
-3. **Convert.** `convert_lora_to_gguf.py --base <pinned HF dir>` produces a `qwen35` LoRA GGUF (f16).
+3. **Convert.** `convert_lora_to_gguf.py --base <pinned HF dir>` produces a `qwen35` LoRA GGUF. Use `--outtype f32` for low-rank adapters: on the 4090 a rank-1 f16 file decodes at 0.951 of stock and fails the speed gate, while f32 reaches 0.973 (`tools/extract_adapter/to_gguf.sh`).
 4. **Register.** `brain adapters add <gguf> --name … --kind generation --roles system2`:
    - reads the rank, target modules and base revision from the GGUF and PEFT metadata;
    - computes the sha256 values;
@@ -695,7 +697,7 @@ logging: {level: info, bodies: false}
 |---|---|
 | `model` | `-m /models/<file>` |
 | `mmproj` | `--mmproj …` |
-| each lora | `--lora /models/<file>`; any lora also adds `--lora-init-without-apply` |
+| each lora | `--lora /models/<file>`; any lora also adds `--lora-init-without-apply --cache-ram 0` |
 | `ctx` | `-c` |
 | `batch` | `-b` |
 | `ubatch` | `-ub` |

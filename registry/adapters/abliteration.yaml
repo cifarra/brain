@@ -6,28 +6,34 @@ router_description: "Uncensored general assistant behaviour."
 base:
   model: Qwen/Qwen3.5-9B
   hf_revision: c202236235762e1c871ad0ccb60c8ee5ba337b9a
-  weights_sha256: null            # filled in by the extraction (sha256 of the bf16 safetensors index)
-  quant_compat: [BF16, Q8_0, Q6_K, Q5_K_M, Q4_K_M, IQ4_XS]   # pruned by the gate (Experiment 0)
+  weights_sha256: "26d3539b516be613f39563617cb9d33b3f83d401298125be392c80cefb8f7fe5"   # sha256 of model.safetensors.index.json
+  quant_compat: [Q8_0]            # gated so far; other quants are being evaluated
 artifact:
   format: gguf-lora
   arch: qwen35
   file: adapters/abliteration-wangzhang-r1.gguf
-  sha256: null                    # filled in by the extraction
-  size_mb: null
+  sha256: "504a85579dc41e8f688f54cf191c92893c787ec2566984cd9b64ab5f9a91ba7b"
+  size_mb: 2.45                   # f32 on purpose: the f16 file decodes at 0.951 of stock and fails the speed gate
 target_modules: [linear_attn.out_proj, mlp.down_proj, self_attn.o_proj]
 rank: 1
 scale: {default: 1.0, min: 0.0, max: 1.5}
 roles: [system2, system2-fast]
 compat:
-  incompatible_with: [clef]
+  incompatible_with: [clef, "kind:decision"]
   requires: []
   exclusive_group: null
 provenance:
   source: wangzhang/Qwen3.5-9B-abliterated@f8770a7aefbb15e1ae7c7945be3c01ec010ddac1
-  method: "rank-1 SVD extraction of (abliterated - stock), tools/extract_adapter"
+  method: "rank-1 SVD extraction of (abliterated - stock), tools/extract_adapter v0.1.0"
   license: Apache-2.0
-  created_at: null
+  created_at: "2026-10-13"
 evals:
-  gate: pending
-  report: null
-  metrics: {refusals_per_100: null, kl_harmless_vs_merged: null, decode_speed_ratio: null}
+  gate: passed
+  report: tools/extract_adapter/out/abliteration.validation.json
+  metrics:
+    quant: Q8_0
+    refusals_per_100: 0.0           # 25 probes; stock 72, merged 0
+    kl_harmless_vs_merged: 0.000523 # Q8_0 conversion noise floor is 0.00041
+    top1_agreement_vs_merged: 0.9918
+    scale0_identical: true          # 45/45, needs --cache-ram 0
+    decode_speed_ratio: 0.9728      # scale 0: 0.9994

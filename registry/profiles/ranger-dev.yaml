@@ -9,7 +9,7 @@ backends:
     args: {ctx: 4096, batch: 4096, ubatch: 4096, parallel: 1, flash_attn: "on", ngl: all}
     measured_peak_gb: null
   s2:
-    model: qwen3.5-9b-q4km
+    model: qwen3.5-9b-q8_0          # abliteration is gated on Q8_0 only so far; Experiment 0 picks the final quant
     mmproj: qwen3.5-9b-mmproj-f16
     loras: [abliteration]         # load order == llama.cpp lora id order
     args: {ctx: 16384, batch: 2048, ubatch: 512, parallel: 1, flash_attn: "on", ngl: all,

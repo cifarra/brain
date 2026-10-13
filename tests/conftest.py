@@ -17,7 +17,7 @@ from brain.config import Settings, SupervisorSettings
 from brain.registry import load_registry
 
 ROOT = Path(__file__).resolve().parents[1]
-REGISTRY = ROOT / "registry"
+REGISTRY = ROOT / "tests" / "fixtures" / "registry"  # frozen copy: the live registry/ evolves with real measurements
 FAKE = Path(__file__).with_name("fake_llama_server.py")
 
 

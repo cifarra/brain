@@ -27,7 +27,7 @@ p.add_argument("--mmproj")
 p.add_argument("--lora", action="append", default=[])
 p.add_argument("--lora-init-without-apply", action="store_true")
 for flag in ("-c", "-b", "-ub", "-np", "-fa", "-ngl", "--ctx-checkpoints", "-ctk", "-ctv",
-             "--reasoning-format", "--reasoning-budget"):
+             "--reasoning-format", "--reasoning-budget", "--cache-ram"):
     p.add_argument(flag)
 p.add_argument("--jinja", action="store_true")
 p.add_argument("--no-jinja", action="store_true")

@@ -1,0 +1,15 @@
+id: qwen3.5-9b-q6k
+kind: base
+arch: qwen35
+family: qwen3.5-9b
+source:
+  model: Qwen/Qwen3.5-9B
+  hf_revision: c202236235762e1c871ad0ccb60c8ee5ba337b9a   # the base the GGUF was converted from (assumed)
+  weights_sha256: null
+  gguf_from: unsloth/Qwen3.5-9B-GGUF
+  gguf_revision: 3885219b6810b007914f3a7950a8d1b469d598a5
+quant: Q6_K
+file: gguf/qwen3.5-9b/Qwen3.5-9B-Q6_K.gguf
+sha256: null
+size_gb: null
+license: Apache-2.0

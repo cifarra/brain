@@ -1,0 +1,36 @@
+# Phase A: Clef is baked into the Clef-Flash GGUF (base + LoRA merged + decision head) and bound
+# to the s1 backend. Listed for discovery and validation; it is not stackable.
+name: clef
+version: 1
+kind: decision
+description: "Cloudflare Clef-Flash: calibrated choice/score/noul decisions in one prefill."
+router_description: null
+base:
+  model: Qwen/Qwen3.5-9B
+  hf_revision: null
+  weights_sha256: null
+  quant_compat: [BF16, Q8_0, Q4_K_M]   # per-quant clef_reference gate in Experiment 0
+artifact:
+  format: merged-gguf
+  arch: clef
+  family: clef-flash
+  file: null
+  sha256: null
+  size_mb: null
+target_modules: []
+rank: 256
+scale: {default: 1.0, min: 1.0, max: 1.0}
+roles: [system1]
+compat:
+  incompatible_with: ["kind:generation"]
+  requires: []
+  exclusive_group: null
+provenance:
+  source: Cloudflare/clef-flash via ggml-org/Clef-Flash-GGUF@6b4fe4c59098479652d94f0fe11a40facbebd1ec
+  method: "merged upstream: LoRA + decision head inside the GGUF"
+  license: Apache-2.0
+  created_at: null
+evals:
+  gate: pending                       # clef_reference (Experiment 0)
+  report: null
+  metrics: {}

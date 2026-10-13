@@ -9,7 +9,7 @@ build/
 # model weights and generated artifacts never go in git
 *.gguf
 *.safetensors
-models/
+/models/
 lab/**/runs/
 .env
 deploy/ranger/config/tokens.yaml

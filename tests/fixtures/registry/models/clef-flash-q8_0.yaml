@@ -1,0 +1,15 @@
+id: clef-flash-q8_0
+kind: decision-merged          # Qwen3.5-9B + Clef LoRA merged + decision head, one GGUF
+arch: clef
+family: clef-flash
+source:
+  model: Cloudflare/clef-flash
+  hf_revision: null
+  weights_sha256: null
+  gguf_from: ggml-org/Clef-Flash-GGUF
+  gguf_revision: 6b4fe4c59098479652d94f0fe11a40facbebd1ec
+quant: Q8_0
+file: gguf/clef-flash/Clef-Flash-Q8_0.gguf
+sha256: null                   # fill in with `brain check --sha256` output once verified on ranger
+size_gb: 9.66
+license: Apache-2.0

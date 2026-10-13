@@ -46,7 +46,9 @@ def build_argv(
     for name in backend.loras:
         argv += ["--lora", str(models_dir / reg.adapters[name].artifact.file)]
     if backend.loras:
-        argv.append("--lora-init-without-apply")
+        # --cache-ram 0: at b11580 the RAM prompt cache is keyed by tokens only, so a request could
+        # resume a state computed under another LoRA scale (tools/extract_adapter/README.md).
+        argv += ["--lora-init-without-apply", "--cache-ram", "0"]
     for key, value in backend.args.model_dump(exclude_none=True).items():
         if key == "jinja":
             argv.append("--jinja" if value else "--no-jinja")

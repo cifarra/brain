@@ -1,0 +1,33 @@
+name: abliteration
+version: 1
+kind: generation
+description: "Removes the refusal direction (rank-1 per matrix, extracted from wangzhang/Qwen3.5-9B-abliterated)."
+router_description: "Uncensored general assistant behaviour."
+base:
+  model: Qwen/Qwen3.5-9B
+  hf_revision: c202236235762e1c871ad0ccb60c8ee5ba337b9a
+  weights_sha256: null            # filled in by the extraction (sha256 of the bf16 safetensors index)
+  quant_compat: [BF16, Q8_0, Q6_K, Q5_K_M, Q4_K_M, IQ4_XS]   # pruned by the gate (Experiment 0)
+artifact:
+  format: gguf-lora
+  arch: qwen35
+  file: adapters/abliteration-wangzhang-r1.gguf
+  sha256: null                    # filled in by the extraction
+  size_mb: null
+target_modules: [linear_attn.out_proj, mlp.down_proj, self_attn.o_proj]
+rank: 1
+scale: {default: 1.0, min: 0.0, max: 1.5}
+roles: [system2, system2-fast]
+compat:
+  incompatible_with: [clef]
+  requires: []
+  exclusive_group: null
+provenance:
+  source: wangzhang/Qwen3.5-9B-abliterated@f8770a7aefbb15e1ae7c7945be3c01ec010ddac1
+  method: "rank-1 SVD extraction of (abliterated - stock), tools/extract_adapter"
+  license: Apache-2.0
+  created_at: null
+evals:
+  gate: pending
+  report: null
+  metrics: {refusals_per_100: null, kl_harmless_vs_merged: null, decode_speed_ratio: null}
