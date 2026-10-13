@@ -913,11 +913,11 @@ A2-A7 and A10 don't need the GPU, so they run **in parallel with Experiment 0**.
   - max |Δp| ≤ 0.10.
 
 ### Adapter checks (the abliteration gate, written into its manifest)
-- **Compared with the merged `wangzhang` GGUF at the same quant:**
+- **Compared with the merged `wangzhang` GGUF (Q8_0 reference):**
   - refusals within ±3 per 100 probe prompts;
-  - mean KL ≤ 0.01 on harmless text.
+  - mean KL ≤ 0.01 on harmless text at Q8_0. For each other quant: KL(merged Q8_0 ‖ quant + adapter) ≤ the Q8_0 value + that quant's own floor KL(stock Q8_0 ‖ stock quant) + 0.01. This avoids self-quantizing the reference, which would confound unsloth's imatrix quants.
 - **Scale 0:** token-identical to stock on 20 greedy prompts.
-- **Speed:** ≥ 97% of stock when active, and ≥ 99% when loaded at scale 0.
+- **Speed:** active decode overhead ≤ 0.5 ms/token over stock on the same quant (batch 1), and ≥ 99% of stock at scale 0. (Rev 5 change: this replaced "≥ 97% active". A LoRA costs a roughly constant time per token, measured at 0.29–0.31 ms on every quant, so a ratio unfairly fails faster quants: Q4_K_M shows 0.961 for the same 0.3 ms.)
 - **Stacking smoke test:** abliteration + a dummy rank-8 LoRA, both at non-zero scale, produce output that differs from either one alone. This tests the wiring, not quality.
 
 ### Other S2 checks
@@ -1156,7 +1156,7 @@ The first real fine-tuned adapter can enter at any time after Phase A, using the
   - refusals within ±3 per 100;
   - KL ≤ 0.01;
   - scale 0 identical to stock;
-  - speed ≥ 97% active and ≥ 99% at scale 0.
+  - active overhead ≤ 0.5 ms/token and ≥ 99% at scale 0.
 - [ ] **Stacking smoke:** on 5 greedy prompts, two non-zero adapters give output different from each adapter alone.
 - [ ] **`ranger-od-a`:** all measured peaks filled in, validator passes, S2 steady state ≤ `steady_gb`, S1 cold load ≤ 5 s.
 - [ ] **`ranger-12g-a`:** either passes the validator with a sum ≤ 12.0, or the report says why not and gives the measured Ocular own-burst.

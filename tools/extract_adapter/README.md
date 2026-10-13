@@ -11,6 +11,7 @@ llama.cpp can switch on and off per request. The first user is the abliteration 
 | `verify_gguf.py` | Checks GGUF metadata, tensor names and that every `B·A` in the GGUF equals the PEFT one (including the V-head reorder on `ssm_out`). |
 | `validate.py` | Talks to llama-server: greedy outputs, teacher-forced top-100 distributions, refusal probes, decode speed; `report` turns the dumps into the gate metrics. Stdlib only. |
 | `run_validation.sh` | Runs the whole GPU validation on ranger: one server at a time, each under `flock ~/srv/brain-lab/gpu.lock`. |
+| `run_quant_gate.sh` | Extends the gate to other quants (merged Q8_0 stays the reference) and reruns the 100-probe refusal set; `validate.py quants` writes the combined report. |
 | `out/` | The abliteration manifest facts, extraction report and validation summary. |
 
 ## Usage (on ranger)
@@ -137,15 +138,33 @@ learned change; it is the merge being rounded to bf16, and no rank can or should
    `convert_hf_to_gguf.py`; to build the merged comparison GGUF, use its weights with stock's
    config/tokenizer files (a symlink staging dir), plus `--no-mtp`.
 
-## Validation (Q8_0, RTX 4090; details in `out/abliteration.validation.json`)
+## Validation (RTX 4090; details in `out/abliteration.validation.json`)
+
+Q8_0 (the full gate):
 
 | Check | Result | Gate |
 |---|---|---|
-| scale 0 vs no `--lora`, 45 greedy prompts | 45/45 token-identical | identical: pass |
+| scale 0 vs no `--lora` | 45/45 greedy prompts + 100/100 probes token-identical | identical: pass |
 | top-1 agreement vs merged (teacher-forced, 1213 positions) | 99.18% (stock vs merged: 96.95%) | |
 | mean KL(merged ‖ adapter@1), harmless | 0.00052 (stock vs merged: 0.0176; Q8_0 conversion noise floor: 0.00041) | ≤ 0.01: pass |
-| refusals on 25 mild probes: stock / adapter / merged | 18 / 0 / 0 | within ±3 per 100: pass |
+| refusals on 100 mild probes: stock / adapter / merged | 32 / 0 / 0 | within ±3 per 100: pass |
 | decode speed vs stock (90.6 t/s) | scale 1: 0.973, scale 0: 0.999 | ≥ 0.97 / ≥ 0.99: pass |
 
-Not done yet: the stacking smoke test (needs a second adapter), quants other than Q8_0, and a
-100-prompt probe set (25 probes give a 4-per-100 granularity).
+Other unsloth quants, all against the merged **Q8_0** as a fixed reference (quantizing our own merged
+model per quant would confound the comparison with unsloth's imatrix). The rule is
+KL(merged Q8_0 ‖ quant + adapter) ≤ KL(merged Q8_0 ‖ Q8_0 + adapter) [0.00052] + floor + 0.01,
+where floor = KL(stock Q8_0 ‖ stock quant):
+
+| Quant | KL adapter | floor | bound | top-1 | refusals /100 (stock) | scale 0 | speed s1 / s0 | gate |
+|---|---|---|---|---|---|---|---|---|
+| Q6_K | 0.00239 | 0.00247 | 0.0130 | 98.7% | 0 (32) | 120/120 | 0.967 / 0.999 | speed s1 fails |
+| Q5_K_M | 0.00500 | 0.00468 | 0.0152 | 97.4% | 0 (33) | 120/120 | 0.965 / 1.000 | speed s1 fails |
+| Q4_K_M | 0.01605 | 0.01589 | 0.0264 | 95.3% | 0 (31) | 120/120 | 0.961 / 1.000 | speed s1 fails |
+| IQ4_XS | 0.02517 | 0.02437 | 0.0349 | 95.6% | 0 (31) | 120/120 | 0.960 / 1.001 | speed s1 fails |
+
+The adapter's KL against the merged model is the quant's own floor plus about 0.0005: the adapter
+behaves the same on every quant. The adapter adds a constant ~0.3 ms per token, so the ratio drops
+as the base gets faster (Q4_K_M: 133 → 128 t/s). Every quant passes everything except the 0.97
+speed gate at scale 1.
+
+Not done yet: the stacking smoke test (needs a second adapter).
