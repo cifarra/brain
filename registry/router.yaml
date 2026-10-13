@@ -1,0 +1,16 @@
+# Static task -> (role, stack, defaults). A request selects a task with x_task; explicit request
+# fields (model, x_adapters, sampling params) still win. A request without `model` uses `default`.
+tasks:
+  default:
+    role: system2
+    description: "General assistant with thinking."
+    x_adapters: {abliteration: 1.0}
+  translate:
+    role: system2-fast
+    description: "Translation, no thinking, low temperature."
+    x_adapters: {abliteration: 1.0}
+    defaults: {temperature: 0.3}
+  json:
+    role: system2-fast
+    description: "Structured extraction: JSON output, no thinking. Pass response_format with a schema for strict output."
+    defaults: {temperature: 0.2, response_format: {type: json_object}}
