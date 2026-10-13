@@ -1,6 +1,6 @@
 # Feature: "brain", a modular local System 1 / System 2 service
 
-Status: DRAFT rev 4 for user review (design only, no implementation).
+Status: rev 5. Phase A approved for implementation (2026-10-13). **Rev 5's scope cut below overrides anything later in this document.**
 Date: 2026-10-13 (rev 1: 2026-10-07; rev 2: 2026-10-09)
 Owner: Ale
 
@@ -31,6 +31,38 @@ First capability test: CucoStudio shot assignment (Experiment 1).
     - a light fine-tune → adapter workflow.
   - **Phase A is concrete enough to implement:** files, config formats, compose, endpoints and tests.
   - Review fixes are applied: lease atomicity, NVML PIDs inside containers, `batch ≥ ubatch`, Clef prompt rendering for token counting, health semantics, and a firewall instead of binding to the tailnet IP.
+- **Rev 5 (2026-10-13): Unix-philosophy scope cut. The user's direction:** "forget about Ocular, forget about Ollama, forget about any of the other residents of ranger. It's purely focused on creating the most Unix-philosophy-centred brain: an LLM, decisions and adapters." Other services' peaks are their own concern, and the user schedules the pipeline so heavy jobs don't overlap.
+
+  **Removed from Phase A** (sections below that describe these are kept for reference only):
+  - the GPU lease, the tts-trainer drop-in, the VRAM guard against other services, waiting-for-VRAM, and the two Ollama "cases" (`ranger-od-a` vs `ranger-12g-a`);
+  - on-demand residency: both backends are always resident;
+  - the Ocular comparison and migration;
+  - per-token policies and scopes: one optional bearer token (`BRAIN_TOKEN`), tailnet-only;
+  - gateway queues and stack-affine slots: llama-server queues internally, `parallel: 1`;
+  - the gateway-side Clef prompt renderer: llama-server's own error for oversized prompts maps to `400 context_length_exceeded`;
+  - `/admin/reload`: change the registry, then `docker compose restart brain`;
+  - `brain-firewall.service`: ranger's existing `fleet-firewall.sh` already default-denies the WAN on `DOCKER-USER`.
+
+  **Kept:**
+  - the gateway with child llama-server backends;
+  - the registry (models, adapters, profiles, router) and its validator;
+  - adapter stacking and validation;
+  - the static router;
+  - the endpoints `/v1/systemone`, `/v1/chat/completions` (SSE), `/v1/models`, `/v1/adapters`, `/v1/router` and `/health`;
+  - the abliteration adapter extraction and its gate;
+  - the SDK with failover;
+  - the compose stack, the Caddy route and the Kuma monitor.
+
+  **Changed:**
+  - **Unapproved stacks** of two or more adapters are **allowed and flagged** (`x_brain.stack_evaluated: false`), not rejected. This is for exploration while learning adapters. Rejection can come back with per-token policies when the brain is shared.
+  - **Experiment 0** measures **the brain's own** peak VRAM per configuration and quant, and picks profiles for a 12 GB and a ≤ 10 GB envelope, plus a "max quality" profile that just reports its peak. There are no co-residency cases.
+  - **The gateway does not hardcode the llama-server binary path** (`BRAIN_LLAMA_SERVER`, default `llama-server` on PATH). The same gateway therefore runs in the CUDA container on ranger and natively on a Mac (`brew install llama.cpp`) for the edge.
+  - **Pinned runtime:** `ghcr.io/ggml-org/llama.cpp:server-cuda-b11580@sha256:c4348afb91499b10fad12f92626c7a8ca8b69d6475d10c793b810cb61237ce00`. That is build b11580, commit 4413a19, 2026-10-13, CUDA 12.8. It includes #29969 (Clef images) and #30100 (the Metal fix).
+  - **Models live on ranger** in `~/srv/models/{gguf,hf}/…`, downloaded at pinned revisions by `~/srv/models/download.sh`:
+    - Clef-Flash-GGUF `6b4fe4c`
+    - unsloth/Qwen3.5-9B-GGUF `3885219`
+    - Qwen/Qwen3.5-9B `c202236`
+    - wangzhang/Qwen3.5-9B-abliterated `f8770a7`
 
 ---
 

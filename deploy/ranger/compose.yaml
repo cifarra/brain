@@ -1,0 +1,42 @@
+# Installed as ~/srv/docker/apps/brain/compose.yaml on ranger (see ops.md).
+# Built locally (brain:local), so update-containers skips it and watchtower is told to ignore it:
+# the llama.cpp build is pinned on purpose.
+services:
+  brain:
+    build:
+      context: ${BRAIN_SRC:-/home/ale/srv/brain-src}
+      dockerfile: deploy/ranger/Dockerfile
+    image: brain:local
+    container_name: brain
+    restart: unless-stopped
+    init: true
+    environment:
+      - TZ=America/New_York
+      - BRAIN_PROFILE=${BRAIN_PROFILE:-ranger-dev}
+      - BRAIN_TOKEN=${BRAIN_TOKEN:-}
+    ports:
+      - "8790:8790"
+    volumes:
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+      - ${BRAIN_MODELS:-/home/ale/srv/models}:/models:ro
+      # registry is baked into the image; mount the source copy so a model/adapter swap is
+      # "edit registry -> sync -> docker compose restart brain", no rebuild
+      - ${BRAIN_SRC:-/home/ale/srv/brain-src}/registry:/opt/brain/registry:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request,sys; sys.exit(0 if b'BRAIN_OK' in urllib.request.urlopen('http://127.0.0.1:8790/health', timeout=5).read() else 1)"]
+      interval: 30s
+      timeout: 6s
+      start_period: 180s
+      retries: 3
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+    logging:
+      driver: json-file
+      options: {max-size: 20m, max-file: "5"}
