@@ -42,12 +42,12 @@ were measured on this build. To bump it:
 
 `update-containers` skips `brain:local`, and watchtower is told to ignore the container.
 
-## hx: Caddy route
-Add this to the Caddyfile on hx, then run `docker restart caddy`. Restart, never reload: the
-Caddyfile is a single-file bind mount.
+## hx: Caddy route (installed 2026-10-13)
+The block lives in `hx:~/srv/docker/apps/caddy/Caddyfile`; the backup from before it was added is
+`Caddyfile.bak-brain-20261013`. After editing, run `docker restart caddy`. Restart, never reload: the
+Caddyfile is a single-file bind mount. TLS comes from the global `local_certs`.
 ```
 brain.hx {
-  tls internal
   reverse_proxy 192.168.1.215:8790 {
     flush_interval -1          # stream SSE tokens immediately
     transport http {
