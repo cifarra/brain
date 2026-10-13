@@ -23,7 +23,7 @@ class SupervisorSettings(Strict):
 
 
 class Settings(Strict):
-    profile: str = "ranger-dev"
+    profile: str = "ranger-12g"
     registry: Path = Path("registry")
     models_dir: Path = Path("/models")
     llama_server: str = "llama-server"  # binary on PATH, or an absolute path

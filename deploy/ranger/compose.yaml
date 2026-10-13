@@ -12,7 +12,7 @@ services:
     init: true
     environment:
       - TZ=America/New_York
-      - BRAIN_PROFILE=${BRAIN_PROFILE:-ranger-dev}
+      - BRAIN_PROFILE=${BRAIN_PROFILE:-ranger-12g}
       - BRAIN_TOKEN=${BRAIN_TOKEN:-}
     ports:
       - "8790:8790"

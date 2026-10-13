@@ -172,6 +172,8 @@ class BackendArgs(Strict):
     reasoning_format: str | None = None
     reasoning_budget: int | None = None
     jinja: bool | None = None
+    override_tensor: list[str] | None = None  # each -> `-ot <pattern>=<buffer>`, e.g. output.weight=CPU
+    mmproj_offload: bool | None = None  # False -> --no-mmproj-offload (vision encoder on CPU)
 
     @field_validator("flash_attn", mode="before")
     @classmethod

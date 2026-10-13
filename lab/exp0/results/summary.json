@@ -1,0 +1,1964 @@
+{
+ "calibration": {
+  "Q8_0": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 0.9921259842519685,
+   "p99_dp": 0.026067459502569838,
+   "max_dp": 0.11875082434407219,
+   "mean_dp": 0.0025326107708819293,
+   "mean_kl": 0.0003853354242351729,
+   "records_pass": 142,
+   "records_top1_fail": 2,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     2
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     0
+    ],
+    "kind=sentiment": [
+     22,
+     0
+    ],
+    "kind=shot_assign": [
+     60,
+     4
+    ],
+    "kind=urgency": [
+     18,
+     2
+    ],
+    "options=2-3": [
+     54,
+     0
+    ],
+    "options=4-7": [
+     62,
+     5
+    ],
+    "options=8-15": [
+     34,
+     3
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     4
+    ],
+    "tokens=500-1.5k": [
+     40,
+     1
+    ],
+    "tokens=<500": [
+     64,
+     2
+    ],
+    "tokens=>=3k": [
+     11,
+     1
+    ]
+   },
+   "worst": [
+    {
+     "id": "r011",
+     "kind": "shot_assign",
+     "tokens": 2059,
+     "n_opt": 12,
+     "max_dp": 0.11875082434407219,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r004",
+     "kind": "shot_assign",
+     "tokens": 1641,
+     "n_opt": 7,
+     "max_dp": 0.0410884762562867,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r052",
+     "kind": "shot_assign",
+     "tokens": 3262,
+     "n_opt": 7,
+     "max_dp": 0.038281616925455064,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r143",
+     "kind": "mixed",
+     "tokens": 393,
+     "n_opt": 4,
+     "max_dp": 0.03515237941095384,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r113",
+     "kind": "urgency",
+     "tokens": 1070,
+     "n_opt": 10,
+     "max_dp": 0.03406237705026682,
+     "top1_ok": true,
+     "pass": false
+    }
+   ],
+   "gate": false
+  },
+  "Q6_K-hbf16": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 0.9921259842519685,
+   "p99_dp": 0.06292524341902347,
+   "max_dp": 0.12119262346778059,
+   "mean_dp": 0.004780315410374461,
+   "mean_kl": 0.0013453618872707235,
+   "records_pass": 129,
+   "records_top1_fail": 2,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     3
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     0
+    ],
+    "kind=sentiment": [
+     22,
+     4
+    ],
+    "kind=shot_assign": [
+     60,
+     9
+    ],
+    "kind=urgency": [
+     18,
+     5
+    ],
+    "options=2-3": [
+     54,
+     3
+    ],
+    "options=4-7": [
+     62,
+     12
+    ],
+    "options=8-15": [
+     34,
+     6
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     7
+    ],
+    "tokens=500-1.5k": [
+     40,
+     7
+    ],
+    "tokens=<500": [
+     64,
+     4
+    ],
+    "tokens=>=3k": [
+     11,
+     3
+    ]
+   },
+   "worst": [
+    {
+     "id": "r004",
+     "kind": "shot_assign",
+     "tokens": 1641,
+     "n_opt": 7,
+     "max_dp": 0.12119262346778059,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r011",
+     "kind": "shot_assign",
+     "tokens": 2059,
+     "n_opt": 12,
+     "max_dp": 0.10745437563746463,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r109",
+     "kind": "urgency",
+     "tokens": 244,
+     "n_opt": 7,
+     "max_dp": 0.0837694548120716,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r107",
+     "kind": "urgency",
+     "tokens": 3164,
+     "n_opt": 10,
+     "max_dp": 0.07928611884480319,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r113",
+     "kind": "urgency",
+     "tokens": 1070,
+     "n_opt": 10,
+     "max_dp": 0.07276277823020505,
+     "top1_ok": true,
+     "pass": false
+    }
+   ],
+   "gate": false
+  },
+  "Q5_K_M-hbf16": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 0.9645669291338582,
+   "p99_dp": 0.11909481296595564,
+   "max_dp": 0.3096533643020613,
+   "mean_dp": 0.010635420640574133,
+   "mean_kl": 0.0065299125911906395,
+   "records_pass": 95,
+   "records_top1_fail": 9,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     8
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     3
+    ],
+    "kind=sentiment": [
+     22,
+     6
+    ],
+    "kind=shot_assign": [
+     60,
+     26
+    ],
+    "kind=urgency": [
+     18,
+     12
+    ],
+    "options=2-3": [
+     54,
+     8
+    ],
+    "options=4-7": [
+     62,
+     29
+    ],
+    "options=8-15": [
+     34,
+     18
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     19
+    ],
+    "tokens=500-1.5k": [
+     40,
+     13
+    ],
+    "tokens=<500": [
+     64,
+     17
+    ],
+    "tokens=>=3k": [
+     11,
+     6
+    ]
+   },
+   "worst": [
+    {
+     "id": "r004",
+     "kind": "shot_assign",
+     "tokens": 1641,
+     "n_opt": 7,
+     "max_dp": 0.3096533643020613,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r011",
+     "kind": "shot_assign",
+     "tokens": 2059,
+     "n_opt": 12,
+     "max_dp": 0.266808736327944,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r021",
+     "kind": "shot_assign",
+     "tokens": 2156,
+     "n_opt": 11,
+     "max_dp": 0.177395578773492,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r107",
+     "kind": "urgency",
+     "tokens": 3164,
+     "n_opt": 10,
+     "max_dp": 0.1516819995832835,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r010",
+     "kind": "shot_assign",
+     "tokens": 2876,
+     "n_opt": 11,
+     "max_dp": 0.14557188453401693,
+     "top1_ok": true,
+     "pass": false
+    }
+   ],
+   "gate": false
+  },
+  "Q4_K_M": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 0.9881889763779528,
+   "p99_dp": 0.08274393987363914,
+   "max_dp": 0.25616519899423523,
+   "mean_dp": 0.008763939969242658,
+   "mean_kl": 0.004097757376353904,
+   "records_pass": 105,
+   "records_top1_fail": 3,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     8
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     1
+    ],
+    "kind=sentiment": [
+     22,
+     4
+    ],
+    "kind=shot_assign": [
+     60,
+     23
+    ],
+    "kind=urgency": [
+     18,
+     9
+    ],
+    "options=2-3": [
+     54,
+     7
+    ],
+    "options=4-7": [
+     62,
+     25
+    ],
+    "options=8-15": [
+     34,
+     13
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     14
+    ],
+    "tokens=500-1.5k": [
+     40,
+     12
+    ],
+    "tokens=<500": [
+     64,
+     13
+    ],
+    "tokens=>=3k": [
+     11,
+     6
+    ]
+   },
+   "worst": [
+    {
+     "id": "r080",
+     "kind": "sentiment",
+     "tokens": 1517,
+     "n_opt": 3,
+     "max_dp": 0.25616519899423523,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r011",
+     "kind": "shot_assign",
+     "tokens": 2059,
+     "n_opt": 12,
+     "max_dp": 0.24180819806569942,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r031",
+     "kind": "shot_assign",
+     "tokens": 496,
+     "n_opt": 3,
+     "max_dp": 0.14661893960409844,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r051",
+     "kind": "shot_assign",
+     "tokens": 2784,
+     "n_opt": 13,
+     "max_dp": 0.1274271084137698,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r107",
+     "kind": "urgency",
+     "tokens": 3164,
+     "n_opt": 10,
+     "max_dp": 0.10792116802459778,
+     "top1_ok": true,
+     "pass": false
+    }
+   ],
+   "gate": false
+  },
+  "Q4_K_M-hbf16": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 0.9724409448818898,
+   "p99_dp": 0.14994885388463108,
+   "max_dp": 0.4266045885104929,
+   "mean_dp": 0.015368036014867878,
+   "mean_kl": 0.013196366342346132,
+   "records_pass": 80,
+   "records_top1_fail": 7,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     14
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     1
+    ],
+    "kind=sentiment": [
+     22,
+     9
+    ],
+    "kind=shot_assign": [
+     60,
+     32
+    ],
+    "kind=urgency": [
+     18,
+     14
+    ],
+    "options=2-3": [
+     54,
+     9
+    ],
+    "options=4-7": [
+     62,
+     42
+    ],
+    "options=8-15": [
+     34,
+     19
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     21
+    ],
+    "tokens=500-1.5k": [
+     40,
+     19
+    ],
+    "tokens=<500": [
+     64,
+     23
+    ],
+    "tokens=>=3k": [
+     11,
+     7
+    ]
+   },
+   "worst": [
+    {
+     "id": "r011",
+     "kind": "shot_assign",
+     "tokens": 2059,
+     "n_opt": 12,
+     "max_dp": 0.4266045885104929,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r051",
+     "kind": "shot_assign",
+     "tokens": 2784,
+     "n_opt": 13,
+     "max_dp": 0.2564873227514639,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r052",
+     "kind": "shot_assign",
+     "tokens": 3262,
+     "n_opt": 7,
+     "max_dp": 0.22362795957748066,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r080",
+     "kind": "sentiment",
+     "tokens": 1517,
+     "n_opt": 3,
+     "max_dp": 0.21755756711927043,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r026",
+     "kind": "shot_assign",
+     "tokens": 939,
+     "n_opt": 5,
+     "max_dp": 0.21208479586859774,
+     "top1_ok": true,
+     "pass": false
+    }
+   ],
+   "gate": false
+  },
+  "IQ4_XS-hbf16": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 0.952755905511811,
+   "p99_dp": 0.20397893082854585,
+   "max_dp": 0.6690415536527914,
+   "mean_dp": 0.014977372780195213,
+   "mean_kl": 0.020586324731950375,
+   "records_pass": 89,
+   "records_top1_fail": 12,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     11
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     3
+    ],
+    "kind=sentiment": [
+     22,
+     7
+    ],
+    "kind=shot_assign": [
+     60,
+     27
+    ],
+    "kind=urgency": [
+     18,
+     13
+    ],
+    "options=2-3": [
+     54,
+     6
+    ],
+    "options=4-7": [
+     62,
+     36
+    ],
+    "options=8-15": [
+     34,
+     19
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     20
+    ],
+    "tokens=500-1.5k": [
+     40,
+     13
+    ],
+    "tokens=<500": [
+     64,
+     20
+    ],
+    "tokens=>=3k": [
+     11,
+     8
+    ]
+   },
+   "worst": [
+    {
+     "id": "r010",
+     "kind": "shot_assign",
+     "tokens": 2876,
+     "n_opt": 11,
+     "max_dp": 0.6690415536527914,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r011",
+     "kind": "shot_assign",
+     "tokens": 2059,
+     "n_opt": 12,
+     "max_dp": 0.45399665043379317,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r004",
+     "kind": "shot_assign",
+     "tokens": 1641,
+     "n_opt": 7,
+     "max_dp": 0.41838016160466335,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r080",
+     "kind": "sentiment",
+     "tokens": 1517,
+     "n_opt": 3,
+     "max_dp": 0.3758929784072743,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r007",
+     "kind": "shot_assign",
+     "tokens": 524,
+     "n_opt": 3,
+     "max_dp": 0.21235316693834722,
+     "top1_ok": false,
+     "pass": false
+    }
+   ],
+   "gate": false
+  },
+  "Q4_K_M-ocpu": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 0.9881889763779528,
+   "p99_dp": 0.08274393987363914,
+   "max_dp": 0.25616519899423523,
+   "mean_dp": 0.008763939969242658,
+   "mean_kl": 0.004097757376353904,
+   "records_pass": 105,
+   "records_top1_fail": 3,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     8
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     1
+    ],
+    "kind=sentiment": [
+     22,
+     4
+    ],
+    "kind=shot_assign": [
+     60,
+     23
+    ],
+    "kind=urgency": [
+     18,
+     9
+    ],
+    "options=2-3": [
+     54,
+     7
+    ],
+    "options=4-7": [
+     62,
+     25
+    ],
+    "options=8-15": [
+     34,
+     13
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     14
+    ],
+    "tokens=500-1.5k": [
+     40,
+     12
+    ],
+    "tokens=<500": [
+     64,
+     13
+    ],
+    "tokens=>=3k": [
+     11,
+     6
+    ]
+   },
+   "worst": [
+    {
+     "id": "r080",
+     "kind": "sentiment",
+     "tokens": 1517,
+     "n_opt": 3,
+     "max_dp": 0.25616519899423523,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r011",
+     "kind": "shot_assign",
+     "tokens": 2059,
+     "n_opt": 12,
+     "max_dp": 0.24180819806569942,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r031",
+     "kind": "shot_assign",
+     "tokens": 496,
+     "n_opt": 3,
+     "max_dp": 0.14661893960409844,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r051",
+     "kind": "shot_assign",
+     "tokens": 2784,
+     "n_opt": 13,
+     "max_dp": 0.1274271084137698,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r107",
+     "kind": "urgency",
+     "tokens": 3164,
+     "n_opt": 10,
+     "max_dp": 0.10792116802459778,
+     "top1_ok": true,
+     "pass": false
+    }
+   ],
+   "gate": false
+  },
+  "Q4_K_M-nooutput": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 0.9763779527559056,
+   "p99_dp": 0.17093365958607162,
+   "max_dp": 0.2936630931053415,
+   "mean_dp": 0.021402119546215407,
+   "mean_kl": 0.017123899229039768,
+   "records_pass": 39,
+   "records_top1_fail": 6,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     11
+    ],
+    "kind=noul": [
+     15,
+     12
+    ],
+    "kind=route": [
+     20,
+     18
+    ],
+    "kind=sentiment": [
+     22,
+     16
+    ],
+    "kind=shot_assign": [
+     60,
+     37
+    ],
+    "kind=urgency": [
+     18,
+     17
+    ],
+    "options=2-3": [
+     54,
+     29
+    ],
+    "options=4-7": [
+     62,
+     55
+    ],
+    "options=8-15": [
+     34,
+     27
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     26
+    ],
+    "tokens=500-1.5k": [
+     40,
+     30
+    ],
+    "tokens=<500": [
+     64,
+     47
+    ],
+    "tokens=>=3k": [
+     11,
+     8
+    ]
+   },
+   "worst": [
+    {
+     "id": "r031",
+     "kind": "shot_assign",
+     "tokens": 496,
+     "n_opt": 3,
+     "max_dp": 0.2936630931053415,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r060",
+     "kind": "route",
+     "tokens": 3029,
+     "n_opt": 8,
+     "max_dp": 0.2679181621651867,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r080",
+     "kind": "sentiment",
+     "tokens": 1517,
+     "n_opt": 3,
+     "max_dp": 0.25283009166942755,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r021",
+     "kind": "shot_assign",
+     "tokens": 2156,
+     "n_opt": 11,
+     "max_dp": 0.22733109726197676,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r073",
+     "kind": "route",
+     "tokens": 322,
+     "n_opt": 7,
+     "max_dp": 0.21596031183787145,
+     "top1_ok": true,
+     "pass": false
+    }
+   ],
+   "gate": false
+  },
+  "BF16-ngl28": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 1.0,
+   "p99_dp": 2.4249051930855914e-05,
+   "max_dp": 9.046555089642361e-05,
+   "mean_dp": 1.6605014394769755e-06,
+   "mean_kl": 3.999736619691868e-10,
+   "records_pass": 150,
+   "records_top1_fail": 0,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     0
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     0
+    ],
+    "kind=sentiment": [
+     22,
+     0
+    ],
+    "kind=shot_assign": [
+     60,
+     0
+    ],
+    "kind=urgency": [
+     18,
+     0
+    ],
+    "options=2-3": [
+     54,
+     0
+    ],
+    "options=4-7": [
+     62,
+     0
+    ],
+    "options=8-15": [
+     34,
+     0
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     0
+    ],
+    "tokens=500-1.5k": [
+     40,
+     0
+    ],
+    "tokens=<500": [
+     64,
+     0
+    ],
+    "tokens=>=3k": [
+     11,
+     0
+    ]
+   },
+   "worst": [
+    {
+     "id": "r102",
+     "kind": "urgency",
+     "tokens": 288,
+     "n_opt": 9,
+     "max_dp": 9.046555089642361e-05,
+     "top1_ok": true,
+     "pass": true
+    },
+    {
+     "id": "r080",
+     "kind": "sentiment",
+     "tokens": 1517,
+     "n_opt": 3,
+     "max_dp": 4.374016561448091e-05,
+     "top1_ok": true,
+     "pass": true
+    },
+    {
+     "id": "r105",
+     "kind": "urgency",
+     "tokens": 195,
+     "n_opt": 4,
+     "max_dp": 3.8795379904588145e-05,
+     "top1_ok": true,
+     "pass": true
+    },
+    {
+     "id": "r103",
+     "kind": "urgency",
+     "tokens": 342,
+     "n_opt": 6,
+     "max_dp": 3.577343531258048e-05,
+     "top1_ok": true,
+     "pass": true
+    },
+    {
+     "id": "r127",
+     "kind": "noul",
+     "tokens": 170,
+     "n_opt": 2,
+     "max_dp": 3.23607688433869e-05,
+     "top1_ok": true,
+     "pass": true
+    }
+   ],
+   "gate": true
+  },
+  "IQ4_XS-a8-hbf16": {
+   "n_records": 111,
+   "n_questions": 176,
+   "n_scored": 171,
+   "top1": 0.9883040935672515,
+   "p99_dp": 0.09136524287120744,
+   "max_dp": 0.17199927850429864,
+   "mean_dp": 0.007491285524702088,
+   "mean_kl": 0.0025020142127560752,
+   "records_pass": 89,
+   "records_top1_fail": 2,
+   "fail_by": {
+    "kind=mixed": [
+     8,
+     4
+    ],
+    "kind=noul": [
+     11,
+     0
+    ],
+    "kind=route": [
+     17,
+     3
+    ],
+    "kind=sentiment": [
+     17,
+     2
+    ],
+    "kind=shot_assign": [
+     44,
+     8
+    ],
+    "kind=urgency": [
+     14,
+     5
+    ],
+    "options=2-3": [
+     44,
+     2
+    ],
+    "options=4-7": [
+     48,
+     13
+    ],
+    "options=8-15": [
+     19,
+     7
+    ],
+    "tokens=1.5k-3k": [
+     7,
+     2
+    ],
+    "tokens=500-1.5k": [
+     40,
+     11
+    ],
+    "tokens=<500": [
+     64,
+     9
+    ]
+   },
+   "worst": [
+    {
+     "id": "r026",
+     "kind": "shot_assign",
+     "tokens": 939,
+     "n_opt": 5,
+     "max_dp": 0.17199927850429864,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r044",
+     "kind": "shot_assign",
+     "tokens": 642,
+     "n_opt": 5,
+     "max_dp": 0.11419680394595871,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r007",
+     "kind": "shot_assign",
+     "tokens": 524,
+     "n_opt": 3,
+     "max_dp": 0.11327125220399092,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r004",
+     "kind": "shot_assign",
+     "tokens": 1641,
+     "n_opt": 7,
+     "max_dp": 0.10311944944927903,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r117",
+     "kind": "urgency",
+     "tokens": 267,
+     "n_opt": 8,
+     "max_dp": 0.09274639599774254,
+     "top1_ok": true,
+     "pass": false
+    }
+   ],
+   "gate": false
+  },
+  "Q4_K_M-abf16-hbf16": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 0.9803149606299213,
+   "p99_dp": 0.09436942116227387,
+   "max_dp": 0.2914348908387446,
+   "mean_dp": 0.008542131519574931,
+   "mean_kl": 0.003793779054282763,
+   "records_pass": 110,
+   "records_top1_fail": 5,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     7
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     0
+    ],
+    "kind=sentiment": [
+     22,
+     3
+    ],
+    "kind=shot_assign": [
+     60,
+     20
+    ],
+    "kind=urgency": [
+     18,
+     10
+    ],
+    "options=2-3": [
+     54,
+     8
+    ],
+    "options=4-7": [
+     62,
+     20
+    ],
+    "options=8-15": [
+     34,
+     12
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     14
+    ],
+    "tokens=500-1.5k": [
+     40,
+     10
+    ],
+    "tokens=<500": [
+     64,
+     11
+    ],
+    "tokens=>=3k": [
+     11,
+     5
+    ]
+   },
+   "worst": [
+    {
+     "id": "r080",
+     "kind": "sentiment",
+     "tokens": 1517,
+     "n_opt": 3,
+     "max_dp": 0.2914348908387446,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r052",
+     "kind": "shot_assign",
+     "tokens": 3262,
+     "n_opt": 7,
+     "max_dp": 0.14846073806230475,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r106",
+     "kind": "urgency",
+     "tokens": 286,
+     "n_opt": 9,
+     "max_dp": 0.12684838888196187,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r117",
+     "kind": "urgency",
+     "tokens": 267,
+     "n_opt": 8,
+     "max_dp": 0.10853669964056162,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r031",
+     "kind": "shot_assign",
+     "tokens": 496,
+     "n_opt": 3,
+     "max_dp": 0.10480779048715871,
+     "top1_ok": true,
+     "pass": false
+    }
+   ],
+   "gate": false
+  },
+  "Q5_K_M-a8-hbf16": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 0.984251968503937,
+   "p99_dp": 0.06118270820905653,
+   "max_dp": 0.14995441312329674,
+   "mean_dp": 0.00517327812849424,
+   "mean_kl": 0.001567990585341855,
+   "records_pass": 125,
+   "records_top1_fail": 4,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     3
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     1
+    ],
+    "kind=sentiment": [
+     22,
+     5
+    ],
+    "kind=shot_assign": [
+     60,
+     13
+    ],
+    "kind=urgency": [
+     18,
+     3
+    ],
+    "options=2-3": [
+     54,
+     2
+    ],
+    "options=4-7": [
+     62,
+     14
+    ],
+    "options=8-15": [
+     34,
+     9
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     12
+    ],
+    "tokens=500-1.5k": [
+     40,
+     5
+    ],
+    "tokens=<500": [
+     64,
+     4
+    ],
+    "tokens=>=3k": [
+     11,
+     4
+    ]
+   },
+   "worst": [
+    {
+     "id": "r010",
+     "kind": "shot_assign",
+     "tokens": 2876,
+     "n_opt": 11,
+     "max_dp": 0.14995441312329674,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r004",
+     "kind": "shot_assign",
+     "tokens": 1641,
+     "n_opt": 7,
+     "max_dp": 0.13792936962201058,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r109",
+     "kind": "urgency",
+     "tokens": 244,
+     "n_opt": 7,
+     "max_dp": 0.12483385735893215,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r080",
+     "kind": "sentiment",
+     "tokens": 1517,
+     "n_opt": 3,
+     "max_dp": 0.07867434744792129,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r011",
+     "kind": "shot_assign",
+     "tokens": 2059,
+     "n_opt": 12,
+     "max_dp": 0.07319652623584572,
+     "top1_ok": false,
+     "pass": false
+    }
+   ],
+   "gate": false
+  },
+  "Q5_K_M-abf16-hbf16": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 0.9960629921259843,
+   "p99_dp": 0.04999763374199254,
+   "max_dp": 0.10505687711709022,
+   "mean_dp": 0.004164007020482747,
+   "mean_kl": 0.000939705426644238,
+   "records_pass": 135,
+   "records_top1_fail": 1,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     1
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     0
+    ],
+    "kind=sentiment": [
+     22,
+     3
+    ],
+    "kind=shot_assign": [
+     60,
+     6
+    ],
+    "kind=urgency": [
+     18,
+     5
+    ],
+    "options=2-3": [
+     54,
+     2
+    ],
+    "options=4-7": [
+     62,
+     6
+    ],
+    "options=8-15": [
+     34,
+     7
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     8
+    ],
+    "tokens=500-1.5k": [
+     40,
+     2
+    ],
+    "tokens=<500": [
+     64,
+     4
+    ],
+    "tokens=>=3k": [
+     11,
+     1
+    ]
+   },
+   "worst": [
+    {
+     "id": "r080",
+     "kind": "sentiment",
+     "tokens": 1517,
+     "n_opt": 3,
+     "max_dp": 0.10505687711709022,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r010",
+     "kind": "shot_assign",
+     "tokens": 2876,
+     "n_opt": 11,
+     "max_dp": 0.09695540717227852,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r015",
+     "kind": "shot_assign",
+     "tokens": 1739,
+     "n_opt": 5,
+     "max_dp": 0.0675926338716577,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r021",
+     "kind": "shot_assign",
+     "tokens": 2156,
+     "n_opt": 11,
+     "max_dp": 0.06567014495607071,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r011",
+     "kind": "shot_assign",
+     "tokens": 2059,
+     "n_opt": 12,
+     "max_dp": 0.060562940427725864,
+     "top1_ok": true,
+     "pass": false
+    }
+   ],
+   "gate": false
+  },
+  "Q6_K-a8-hbf16": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 0.9921259842519685,
+   "p99_dp": 0.042031241617879425,
+   "max_dp": 0.10777992748777898,
+   "mean_dp": 0.0034645800533832506,
+   "mean_kl": 0.0007207230276622618,
+   "records_pass": 136,
+   "records_top1_fail": 2,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     4
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     0
+    ],
+    "kind=sentiment": [
+     22,
+     1
+    ],
+    "kind=shot_assign": [
+     60,
+     7
+    ],
+    "kind=urgency": [
+     18,
+     2
+    ],
+    "options=2-3": [
+     54,
+     1
+    ],
+    "options=4-7": [
+     62,
+     9
+    ],
+    "options=8-15": [
+     34,
+     4
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     8
+    ],
+    "tokens=500-1.5k": [
+     40,
+     2
+    ],
+    "tokens=<500": [
+     64,
+     2
+    ],
+    "tokens=>=3k": [
+     11,
+     2
+    ]
+   },
+   "worst": [
+    {
+     "id": "r004",
+     "kind": "shot_assign",
+     "tokens": 1641,
+     "n_opt": 7,
+     "max_dp": 0.10777992748777898,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r011",
+     "kind": "shot_assign",
+     "tokens": 2059,
+     "n_opt": 12,
+     "max_dp": 0.10211177443084885,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r052",
+     "kind": "shot_assign",
+     "tokens": 3262,
+     "n_opt": 7,
+     "max_dp": 0.06153651187959164,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r109",
+     "kind": "urgency",
+     "tokens": 244,
+     "n_opt": 7,
+     "max_dp": 0.05999367553851165,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r010",
+     "kind": "shot_assign",
+     "tokens": 2876,
+     "n_opt": 11,
+     "max_dp": 0.0586340661488427,
+     "top1_ok": true,
+     "pass": false
+    }
+   ],
+   "gate": false
+  },
+  "Q6_K-abf16-hbf16": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 0.9960629921259843,
+   "p99_dp": 0.030960696503494606,
+   "max_dp": 0.06808883156848922,
+   "mean_dp": 0.0027098011178299827,
+   "mean_kl": 0.00039003864558952183,
+   "records_pass": 141,
+   "records_top1_fail": 1,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     2
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     0
+    ],
+    "kind=sentiment": [
+     22,
+     1
+    ],
+    "kind=shot_assign": [
+     60,
+     4
+    ],
+    "kind=urgency": [
+     18,
+     2
+    ],
+    "options=2-3": [
+     54,
+     1
+    ],
+    "options=4-7": [
+     62,
+     4
+    ],
+    "options=8-15": [
+     34,
+     4
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     6
+    ],
+    "tokens=500-1.5k": [
+     40,
+     0
+    ],
+    "tokens=<500": [
+     64,
+     2
+    ],
+    "tokens=>=3k": [
+     11,
+     1
+    ]
+   },
+   "worst": [
+    {
+     "id": "r004",
+     "kind": "shot_assign",
+     "tokens": 1641,
+     "n_opt": 7,
+     "max_dp": 0.06808883156848922,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r109",
+     "kind": "urgency",
+     "tokens": 244,
+     "n_opt": 7,
+     "max_dp": 0.05435068622885286,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r052",
+     "kind": "shot_assign",
+     "tokens": 3262,
+     "n_opt": 7,
+     "max_dp": 0.05078002885545785,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r010",
+     "kind": "shot_assign",
+     "tokens": 2876,
+     "n_opt": 11,
+     "max_dp": 0.04974978594240487,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r011",
+     "kind": "shot_assign",
+     "tokens": 2059,
+     "n_opt": 12,
+     "max_dp": 0.042067300723885315,
+     "top1_ok": true,
+     "pass": false
+    }
+   ],
+   "gate": false
+  },
+  "Q8_0-abf16-hbf16": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 1.0,
+   "p99_dp": 0.012912049983373792,
+   "max_dp": 0.03798934682296351,
+   "mean_dp": 0.0011581351020735003,
+   "mean_kl": 8.368300692248329e-05,
+   "records_pass": 149,
+   "records_top1_fail": 0,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     0
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     0
+    ],
+    "kind=sentiment": [
+     22,
+     0
+    ],
+    "kind=shot_assign": [
+     60,
+     0
+    ],
+    "kind=urgency": [
+     18,
+     1
+    ],
+    "options=2-3": [
+     54,
+     0
+    ],
+    "options=4-7": [
+     62,
+     0
+    ],
+    "options=8-15": [
+     34,
+     1
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     0
+    ],
+    "tokens=500-1.5k": [
+     40,
+     1
+    ],
+    "tokens=<500": [
+     64,
+     0
+    ],
+    "tokens=>=3k": [
+     11,
+     0
+    ]
+   },
+   "worst": [
+    {
+     "id": "r113",
+     "kind": "urgency",
+     "tokens": 1070,
+     "n_opt": 10,
+     "max_dp": 0.03798934682296351,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r021",
+     "kind": "shot_assign",
+     "tokens": 2156,
+     "n_opt": 11,
+     "max_dp": 0.02229875229372469,
+     "top1_ok": true,
+     "pass": true
+    },
+    {
+     "id": "r101",
+     "kind": "sentiment",
+     "tokens": 2488,
+     "n_opt": 3,
+     "max_dp": 0.02203044818753308,
+     "top1_ok": true,
+     "pass": true
+    },
+    {
+     "id": "r080",
+     "kind": "sentiment",
+     "tokens": 1517,
+     "n_opt": 3,
+     "max_dp": 0.02166805280408657,
+     "top1_ok": true,
+     "pass": true
+    },
+    {
+     "id": "r109",
+     "kind": "urgency",
+     "tokens": 244,
+     "n_opt": 7,
+     "max_dp": 0.017559525088688188,
+     "top1_ok": true,
+     "pass": true
+    }
+   ],
+   "gate": true
+  },
+  "Q8_0-hbf16": {
+   "n_records": 150,
+   "n_questions": 259,
+   "n_scored": 254,
+   "top1": 0.9921259842519685,
+   "p99_dp": 0.0259502755264739,
+   "max_dp": 0.11814323139924099,
+   "mean_dp": 0.002519130945801749,
+   "mean_kl": 0.000382435669541449,
+   "records_pass": 142,
+   "records_top1_fail": 2,
+   "fail_by": {
+    "kind=mixed": [
+     15,
+     2
+    ],
+    "kind=noul": [
+     15,
+     0
+    ],
+    "kind=route": [
+     20,
+     0
+    ],
+    "kind=sentiment": [
+     22,
+     0
+    ],
+    "kind=shot_assign": [
+     60,
+     4
+    ],
+    "kind=urgency": [
+     18,
+     2
+    ],
+    "options=2-3": [
+     54,
+     0
+    ],
+    "options=4-7": [
+     62,
+     5
+    ],
+    "options=8-15": [
+     34,
+     3
+    ],
+    "tokens=1.5k-3k": [
+     35,
+     4
+    ],
+    "tokens=500-1.5k": [
+     40,
+     1
+    ],
+    "tokens=<500": [
+     64,
+     2
+    ],
+    "tokens=>=3k": [
+     11,
+     1
+    ]
+   },
+   "worst": [
+    {
+     "id": "r011",
+     "kind": "shot_assign",
+     "tokens": 2059,
+     "n_opt": 12,
+     "max_dp": 0.11814323139924099,
+     "top1_ok": false,
+     "pass": false
+    },
+    {
+     "id": "r004",
+     "kind": "shot_assign",
+     "tokens": 1641,
+     "n_opt": 7,
+     "max_dp": 0.040891407802210566,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r052",
+     "kind": "shot_assign",
+     "tokens": 3262,
+     "n_opt": 7,
+     "max_dp": 0.03809919260812378,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r143",
+     "kind": "mixed",
+     "tokens": 393,
+     "n_opt": 4,
+     "max_dp": 0.03483151343668933,
+     "top1_ok": true,
+     "pass": false
+    },
+    {
+     "id": "r113",
+     "kind": "urgency",
+     "tokens": 1070,
+     "n_opt": 10,
+     "max_dp": 0.03398516245117156,
+     "top1_ok": true,
+     "pass": false
+    }
+   ],
+   "gate": false
+  }
+ },
+ "s2_quality": {
+  "IQ4_XS": {
+   "positions": 693,
+   "top1": 0.9408369408369408,
+   "mean_kl": 0.02026145388942989,
+   "p99_dp": 0.29258017316727436
+  },
+  "Q4_K_M": {
+   "positions": 693,
+   "top1": 0.9408369408369408,
+   "mean_kl": 0.020973923852601363,
+   "p99_dp": 0.2636840145695226
+  },
+  "Q5_K_M": {
+   "positions": 693,
+   "top1": 0.9696969696969697,
+   "mean_kl": 0.004486811706131716,
+   "p99_dp": 0.1017459573405367
+  },
+  "Q6_K": {
+   "positions": 693,
+   "top1": 0.9783549783549783,
+   "mean_kl": 0.0019534478404733277,
+   "p99_dp": 0.08699518309134721
+  }
+ }
+}

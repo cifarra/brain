@@ -5,7 +5,7 @@ budget: null                      # GiB; set from Experiment 0 (brain's own peak
 max_stack: 3
 backends:
   s1:
-    model: clef-flash-q4km
+    model: clef-flash-q8_0-abf16      # only calibrated Clef so far (11.7 GB); 16 GB Macs need a smaller gate-passing variant
     args: {ctx: 4096, batch: 4096, ubatch: 4096, parallel: 1, flash_attn: "on", ngl: all}
     measured_peak_gb: null
   s2:

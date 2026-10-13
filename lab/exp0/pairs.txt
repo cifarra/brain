@@ -1,0 +1,7 @@
+# tag | S1 model | S1 ctx | S1 output on CPU | S1 ngl | S2 quant | S2 ctx/slot | S2 KV | S2 np | S2 mmproj (0 none, 1 GPU, 2 CPU)
+12g-A | gguf/clef-flash/derived/Clef-Flash-Q8_0-abf16-hbf16.gguf | 2048 | 1 | 20 | IQ4_XS | 16384 | q8_0 | 1 | 2
+12g-B | gguf/clef-flash/Clef-Flash-Q8_0.gguf                     | 2048 | 1 | 26 | IQ4_XS | 16384 | q8_0 | 1 | 2
+10g-A | gguf/clef-flash/derived/Clef-Flash-Q8_0-abf16-hbf16.gguf | 2048 | 1 | 14 | IQ4_XS | 8192  | q8_0 | 1 | 2
+10g-B | gguf/clef-flash/derived/Clef-Flash-Q6_K-a8-hbf16.gguf    | 2048 | 1 | 22 | IQ4_XS | 8192  | q8_0 | 1 | 2
+# additivity check at full offload (fits next to the other residents): combined vs sum of solo peaks
+add-1 | gguf/clef-flash/Clef-Flash-Q4_K_M.gguf                   | 4096 | 1 | all | Q4_K_M | 16384 | f16 | 1 | 1

@@ -52,6 +52,11 @@ def build_argv(
     for key, value in backend.args.model_dump(exclude_none=True).items():
         if key == "jinja":
             argv.append("--jinja" if value else "--no-jinja")
+        elif key == "mmproj_offload":
+            argv.append("--mmproj-offload" if value else "--no-mmproj-offload")
+        elif key == "override_tensor":
+            for pattern in value:
+                argv += ["-ot", pattern]
         elif key == "ngl":
             argv += ["-ngl", "999" if value == "all" else str(value)]
         elif key in FLAGS:

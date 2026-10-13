@@ -29,15 +29,15 @@ tests/              unit tests + integration tests against a fake llama-server (
 ```sh
 uv sync
 uv run pytest -q                                              # everything, no GPU needed
-uv run brain check registry/profiles/ranger-dev.yaml --no-files   # validate + print llama-server argv
-uv run brain check ranger-dev --sha256                        # on ranger: also verify file hashes (cached)
+uv run brain check registry/profiles/ranger-12g.yaml --no-files   # validate + print llama-server argv
+uv run brain check ranger-12g --sha256                        # on ranger: also verify file hashes (cached)
 uv run brain adapters list
 BRAIN_MODELS_DIR=~/srv/models uv run brain serve              # gateway on :8790
 ```
 
 | Env | Default | |
 |---|---|---|
-| `BRAIN_PROFILE` | `ranger-dev` | profile id |
+| `BRAIN_PROFILE` | `ranger-12g` | profile id |
 | `BRAIN_REGISTRY` | `./registry` | registry dir |
 | `BRAIN_MODELS_DIR` | `/models` | root for manifest file paths (ranger: `~/srv/models` mounted at `/models`) |
 | `BRAIN_LLAMA_SERVER` | `llama-server` | binary (CUDA image on ranger, `brew install llama.cpp` on a Mac) |

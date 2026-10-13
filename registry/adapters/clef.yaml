@@ -9,7 +9,7 @@ base:
   model: Qwen/Qwen3.5-9B
   hf_revision: null
   weights_sha256: null
-  quant_compat: [BF16, Q8_0, Q4_K_M]   # per-quant clef_reference gate in Experiment 0
+  quant_compat: [BF16, Q8_0-abf16-hbf16]   # Experiment 0 calibration gate; Q8_0 (max 0.119) and Q4_K_M (max 0.256) fail
 artifact:
   format: merged-gguf
   arch: clef
@@ -31,6 +31,12 @@ provenance:
   license: Apache-2.0
   created_at: null
 evals:
-  gate: pending                       # clef_reference (Experiment 0)
-  report: null
-  metrics: {}
+  gate: passed                        # vs BF16 on 150 records: top-1 >= 98% (ex near-ties), p99 |dp| <= 0.03, max <= 0.10
+  report: lab/exp0/REPORT.md
+  metrics:
+    quant: Q8_0-abf16-hbf16
+    top1: 1.0
+    p99_abs_dp: 0.0129
+    max_abs_dp: 0.0380
+    records_passing: "149/150"
+    output_weight_on_cpu: bit-identical

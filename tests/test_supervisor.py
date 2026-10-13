@@ -105,3 +105,13 @@ def test_missing_binary_degrades(tmp_path):
         await sup.stop()
 
     asyncio.run(run())
+
+
+def test_argv_override_tensor_and_mmproj_offload():
+    reg = load_registry(REGISTRY)
+    be = Backend.model_validate({"model": "qwen3.5-9b-q4km", "mmproj": "qwen3.5-9b-mmproj-f16",
+                                 "args": {"override_tensor": ["output.weight=CPU", "ffn_.*=CPU"],
+                                          "mmproj_offload": False}})
+    argv = build_argv(reg, be, binary="llama-server", models_dir=Path("/m"), host="h", port=1)
+    assert argv[argv.index("-ot") + 1] == "output.weight=CPU" and "ffn_.*=CPU" in argv
+    assert argv.count("-ot") == 2 and "--no-mmproj-offload" in argv

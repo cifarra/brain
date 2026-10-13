@@ -1,0 +1,19 @@
+id: clef-flash-q8_0-abf16
+kind: decision-merged
+arch: clef
+family: clef-flash
+source:
+  model: Cloudflare/clef-flash
+  hf_revision: null
+  weights_sha256: null
+  gguf_from: ggml-org/Clef-Flash-GGUF
+  gguf_revision: 6b4fe4c59098479652d94f0fe11a40facbebd1ec
+derived_from:
+  model: clef-flash-bf16
+  recipe: "llama-quantize (b11580) Q8_0 --tensor-type ^decision\\.=bf16 --tensor-type ^dec\\.blk\\.=bf16 --tensor-type attn_=bf16 --tensor-type ssm_=bf16; see ~/srv/models/gguf/clef-flash/derived/MANIFEST.md"
+quant: Q8_0-abf16-hbf16        # FFN Q8_0, attention + linear attention + decision head BF16
+file: gguf/clef-flash/derived/Clef-Flash-Q8_0-abf16-hbf16.gguf
+sha256: "56dcd3f662d38901715fe47144b38df21f8261d7ab33060e5d138ec22e9b342c"
+size_gb: 11.73
+license: Apache-2.0
+# The only Clef quant that passes the Experiment 0 calibration gate (top-1 100%, p99 0.013, max 0.038 vs BF16).
