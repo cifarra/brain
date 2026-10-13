@@ -13,7 +13,7 @@ RUN uv venv --python /usr/bin/python3 /opt/brain/.venv \
  && rm /usr/local/bin/uv
 COPY registry ./registry
 
-ENV PATH=/opt/brain/.venv/bin:$PATH \
+ENV PATH=/opt/brain/.venv/bin:$PATH LD_LIBRARY_PATH=/app:/usr/local/cuda/lib64 \
     BRAIN_LLAMA_SERVER=/app/llama-server \
     BRAIN_REGISTRY=/opt/brain/registry \
     BRAIN_MODELS_DIR=/models \
