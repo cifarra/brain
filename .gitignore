@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+# model weights and generated artifacts never go in git
+*.gguf
+*.safetensors
+models/
+lab/**/runs/
+.env
+deploy/ranger/config/tokens.yaml
