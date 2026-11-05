@@ -575,7 +575,7 @@ The deep check never loads an on-demand backend.
 
 ## Phase A: concrete design (implementable)
 
-### Repository layout (`/Users/ale/gits/clef`, needs `git init`)
+### Repository layout (`/Users/ale/gits/brain`, GitHub `cifarra/brain`)
 ```
 gateway/brain/
   app.py            FastAPI app, routes, error envelope, middleware (auth, request id, logging)
@@ -1331,7 +1331,7 @@ The first real fine-tuned adapter can enter at any time after Phase A, using the
 ---
 
 ## CLAUDE.md Updates
-Create `/Users/ale/gits/clef/CLAUDE.md`. Start a stub in Experiment 0 and finish it in Phase A.
+Create `/Users/ale/gits/brain/CLAUDE.md`. Start a stub in Experiment 0 and finish it in Phase A.
 
 **Purpose:** "brain" is the lab's LLM and decision API. `system1` serves Clef decisions; `system2` serves Qwen with stackable generation adapters. Built on llama.cpp, hosted on ranger. **No captioning or detection.**
 
