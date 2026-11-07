@@ -12,19 +12,20 @@ import os
 import re
 import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any
 
 import anyio
 import httpx
 from fastapi import APIRouter, Depends, FastAPI, Request
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, StreamingResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import stacks
 from .backends import BackendHTTP
 from .config import Settings, load_settings
 from .registry import CHAT, SYSTEMONE, RegistryError, ResolvedRole, load_registry, validate_profile
-from .supervisor import BackendProcess, Supervisor, lora_paths
+from .supervisor import BackendProcess, BackendUnavailable, Supervisor, lora_paths
 
 log = logging.getLogger("brain.app")
 
@@ -45,6 +46,8 @@ CHAT_REJECT = {"lora", "id_slot", "tools", "tool_choice", "functions", "function
 DATA_URL = re.compile(r"^data:image/[\w.+-]+;base64,(.*)$", re.S)
 # clef: "input (N tokens) is too large to process. increase the physical batch size (current batch size: M)"
 TOO_LARGE = re.compile(r"\((\d+) tokens\) is too large to process.*?batch size: (\d+)", re.S)
+UI = Path(__file__).parent / "ui" / "index.html"
+SUITE = re.compile(r"^[\w.-]+$")
 
 
 class APIError(Exception):
@@ -203,11 +206,13 @@ class Brain:
             raise APIError(400, "invalid_request", f"role {name!r} is served by {other}", param="model")
         return role
 
-    def require_ready(self, backend: str) -> BackendHTTP:
-        proc = self.supervisor.backends[backend]
-        if not proc.ready:
-            raise unavailable("degraded" if proc.state == "degraded" else "loading")
-        return self.http[backend]
+    async def acquire(self, backend: str) -> float:
+        """Hold `backend` for one request (swap profiles may switch models first); pair with
+        supervisor.release(). Returns the seconds spent switching."""
+        try:
+            return await self.supervisor.acquire(backend)
+        except BackendUnavailable as e:
+            raise unavailable(e.reason) from None
 
     def x_brain(self, role: ResolvedRole, stack: stacks.Stack, route: dict | None) -> dict:
         return {
@@ -251,16 +256,20 @@ class Brain:
             if not role.capabilities.images:
                 raise APIError(501, "capability_unavailable", f"role {role.name} has no image input")
             check_images(images)
-        http = self.require_ready(role.backend)
+        swap_s = await self.acquire(role.backend)
         try:
-            r = await http.post("/v1/systemone", body)
+            r = await self.http[role.backend].post("/v1/systemone", body)
         except httpx.TransportError:
             raise unavailable("loading") from None
+        finally:
+            await self.supervisor.release(role.backend)
         if r.status_code != 200:
             raise backend_error(r)
         data = r.json()
         xb = self.x_brain(role, stack, None)
         xb.update(latency_ms=ms(t0), prompt_tokens=(data.get("usage") or {}).get("input_tokens"))
+        if swap_s:
+            xb["swap_ms"] = int(swap_s * 1000)
         data["x_brain"] = xb
         return JSONResponse(data)
 
@@ -322,8 +331,6 @@ class Brain:
         if tb is not None and (isinstance(tb, bool) or not isinstance(tb, int) or tb < -1):
             raise APIError(400, "invalid_request", "x_thinking_budget must be an integer >= -1",
                            param="x_thinking_budget")
-        http = self.require_ready(role.backend)
-
         out = {k: v for k, v in body.items() if not k.startswith("x_")}
         d = role.defaults.model_dump(exclude_none=True)
         if task:
@@ -342,12 +349,18 @@ class Brain:
         out["lora"] = stacks.lora_payload(self.lora_ids[role.backend], stack.adapters)
         xb = self.x_brain(role, stack, route)
 
+        backend = role.backend
+        swap_s = await self.acquire(backend)
+        if swap_s:
+            xb["swap_ms"] = int(swap_s * 1000)
         if out.get("stream"):
-            return await self._stream(http, out, xb, t0)
+            return await self._stream(backend, out, xb, t0)  # releases when the stream ends
         try:
-            r = await http.post("/v1/chat/completions", out)
+            r = await self.http[backend].post("/v1/chat/completions", out)
         except httpx.TransportError:
             raise unavailable("loading") from None
+        finally:
+            await self.supervisor.release(backend)
         if r.status_code != 200:
             raise backend_error(r)
         data = r.json()
@@ -355,10 +368,11 @@ class Brain:
         data["x_brain"] = xb
         return JSONResponse(data)
 
-    async def _stream(self, http: BackendHTTP, out: dict, xb: dict, t0: float) -> StreamingResponse:
+    async def _stream(self, backend: str, out: dict, xb: dict, t0: float) -> StreamingResponse:
         stack = contextlib.AsyncExitStack()
+        stack.push_async_callback(self.supervisor.release, backend)  # runs last, exactly once
         try:
-            resp = await stack.enter_async_context(http.stream("/v1/chat/completions", out))
+            resp = await stack.enter_async_context(self.http[backend].stream("/v1/chat/completions", out))
             if resp.status_code != 200:
                 await resp.aread()
                 raise backend_error(resp)
@@ -410,6 +424,8 @@ class Brain:
             "backends": {n: p.info() for n, p in self.supervisor.backends.items()},
             "warnings": self.warnings,
         }
+        if sw := self.supervisor.swapper:
+            body["residency"] = {"mode": "swap", "active": sw.active, "switching": sw.switching, "switches": sw.switches}
         return JSONResponse(body, 200 if status == "ok" else 503)
 
     def models(self) -> dict:
@@ -513,6 +529,35 @@ def create_app(settings: Settings | None = None, start_backends: bool = True) ->
         return brain.health()
 
     app.include_router(api)
+
+    # The web UI is a plain client of the API above: one static page plus the eval suites
+    # (registry/evals/*.json, built by tools/build_evals.py). The page sends the bearer token itself.
+    evals_dir = Path(settings.registry) / "evals"
+
+    @app.get("/", include_in_schema=False)
+    async def root():
+        return RedirectResponse("/ui/")
+
+    @app.get("/ui/", include_in_schema=False)
+    async def ui():
+        return FileResponse(UI, headers={"Cache-Control": "no-cache"})
+
+    @app.get("/ui/evals")
+    async def eval_suites():
+        data = []
+        for f in sorted(evals_dir.glob("*.json")):
+            with contextlib.suppress(ValueError, OSError):
+                suite = json.loads(f.read_text())
+                data.append({k: suite.get(k) for k in ("name", "title", "description", "endpoint", "model", "gate")}
+                            | {"n": len(suite.get("cases") or [])})
+        return {"object": "list", "data": data}
+
+    @app.get("/ui/evals/{name}")
+    async def eval_suite(name: str):
+        f = evals_dir / f"{name}.json"
+        if not SUITE.match(name) or not f.is_file():
+            raise APIError(404, "not_found", f"no eval suite {name!r}")
+        return FileResponse(f, media_type="application/json")
 
     @app.exception_handler(APIError)
     async def _api_error(_: Request, e: APIError):

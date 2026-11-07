@@ -190,3 +190,13 @@ def test_settings_env_and_yaml(tmp_path):
     got = (s.port, s.profile, s.llama_server, s.supervisor.crash_loop_max, s.token)
     assert got == (9100, "mac-dev", "/opt/ls", 2, None)
     assert load_settings({}).llama_server == "llama-server"
+
+
+def test_swap_budget_counts_largest_backend(tmp_path):
+    def swap(d):
+        d.update(residency="swap", initial_backend="s2", budget={"peak_gb": 12.0})
+        d["backends"]["s1"]["measured_peak_gb"] = 11.5
+        d["backends"]["s2"]["measured_peak_gb"] = 7.0
+    assert check(copy_registry(tmp_path, profile_patch=swap)).ok
+    r = check(copy_registry(tmp_path / "b", profile_patch=lambda d: d.update(residency="swap", initial_backend="s9")))
+    assert any("initial_backend 's9'" in e for e in r.errors)

@@ -257,6 +257,8 @@ class Profile(Strict):
     phase: Literal["A"] = "A"
     description: str = ""
     budget: Budget | None = None
+    residency: Literal["resident", "swap"] = "resident"  # swap: one backend in memory at a time
+    initial_backend: str | None = None  # swap: started at boot (default: the first backend)
     max_stack: int = 3
     backends: dict[str, Backend]
     roles: dict[str, Role]
@@ -563,13 +565,18 @@ def validate_profile(
         except stacks.AdapterError as e:
             E(f"router task {tname}: {e.reason}: {e}")
 
-    # --- budget (rev 5: the brain's own peak only)
+    if profile.initial_backend is not None and profile.initial_backend not in profile.backends:
+        E(f"initial_backend {profile.initial_backend!r} is not a backend of profile {profile.id}")
+
+    # --- budget (rev 5: the brain's own peak only; swap holds one backend at a time)
     peaks = [be.measured_peak_gb for be in profile.backends.values()]
     if profile.budget and profile.budget.peak_gb is not None:
         if any(p is None for p in peaks):
             W(f"budget peak_gb={profile.budget.peak_gb} not checked: measured_peak_gb missing (Experiment 0)")
-        elif sum(peaks) > profile.budget.peak_gb:
-            E(f"budget: sum of measured peaks {sum(peaks):.2f} GB > peak_gb {profile.budget.peak_gb}")
+        else:
+            total, how = (max(peaks), "largest") if profile.residency == "swap" else (sum(peaks), "sum of")
+            if total > profile.budget.peak_gb:
+                E(f"budget: {how} measured peaks {total:.2f} GB > peak_gb {profile.budget.peak_gb}")
     elif any(p is None for p in peaks):
         W("measured_peak_gb not set for every backend (Experiment 0 fills it in)")
 

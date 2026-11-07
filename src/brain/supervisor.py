@@ -1,11 +1,15 @@
 """llama-server child processes: argv from a profile backend, start/stop, restart with
-backoff, crash-loop -> degraded, readiness by polling /health. Both backends are resident."""
+backoff, crash-loop -> degraded, readiness by polling /health.
+
+residency "resident" keeps every backend running. "swap" keeps at most one in memory and
+switches on demand (Swapper), for hosts that cannot hold both models (a 16 GB Mac)."""
 
 from __future__ import annotations
 
 import asyncio
 import collections
 import contextlib
+import itertools
 import logging
 import os
 import signal
@@ -108,6 +112,7 @@ class BackendProcess:
 
     def start(self) -> None:
         self._stopping = False
+        self.state = "starting"  # synchronously, so waiters never see "stopped" before the task runs
         self._task = asyncio.create_task(self._run(), name=f"backend-{self.name}")
 
     async def stop(self) -> None:
@@ -202,6 +207,95 @@ class BackendProcess:
             self.restarts += 1
 
 
+class BackendUnavailable(Exception):
+    def __init__(self, reason: str):
+        super().__init__(reason)
+        self.reason = reason
+
+
+class Swapper:
+    """At most one backend runs. A request for another backend waits until in-flight requests
+    drain, stops the active backend (freeing its memory), then starts the wanted one.
+    FIFO: once a request waits for a switch, later requests for the active backend queue behind
+    it, so a steady stream of one kind cannot starve the other."""
+
+    def __init__(self, backends: dict[str, BackendProcess], initial: str, poll_s: float):
+        self.backends, self.initial, self.poll_s = backends, initial, poll_s
+        self.active: str | None = None
+        self.inflight = 0
+        self.switching = False
+        self.switches = 0
+        self.queue: collections.deque[tuple[object, str]] = collections.deque()
+        self.cond = asyncio.Condition()
+
+    def start(self) -> None:
+        self.active = self.initial
+        self.backends[self.initial].start()
+
+    async def acquire(self, name: str) -> float:
+        """Wait until `name` is the active, ready backend and count one request in; release()
+        must follow. Returns the seconds this request spent switching (0.0 if it did not)."""
+        me = (object(), name)
+        async with self.cond:
+            self.queue.append(me)
+            try:
+                while True:
+                    ahead = itertools.takewhile(lambda w: w is not me, self.queue)
+                    if not self.switching and all(n == name for _, n in ahead):
+                        if self.active == name and self.backends[name].state not in ("stopped", "degraded"):
+                            self.inflight += 1
+                            switch = False
+                            break
+                        if self.inflight == 0:  # our turn to switch (or to retry a failed backend)
+                            self.switching = switch = True
+                            break
+                    await self.cond.wait()
+            finally:
+                self.queue.remove(me)
+        if not switch:
+            try:
+                await self._wait_ready(self.backends[name])  # e.g. still loading after boot
+            except BaseException:
+                await self.release()
+                raise
+            return 0.0
+        t0 = time.monotonic()
+        try:
+            if self.active is not None and self.active != name:
+                log.info("swap: %s -> %s", self.active, name)
+                await self.backends[self.active].stop()  # waits for exit, so the memory is free
+            proc = self.backends[name]
+            if proc.state in ("stopped", "degraded"):
+                await proc.stop()  # clears a finished run loop
+                proc.crashes.clear()  # an explicit request earns a fresh crash budget
+                proc.start()
+            self.active = name
+            await self._wait_ready(proc)
+        except BaseException:
+            async with self.cond:
+                self.switching = False
+                self.cond.notify_all()
+            raise
+        async with self.cond:
+            self.switching = False
+            self.inflight += 1
+            self.switches += 1
+            self.cond.notify_all()
+        log.info("swap: %s ready in %.1fs", name, time.monotonic() - t0)
+        return time.monotonic() - t0
+
+    async def _wait_ready(self, proc: BackendProcess) -> None:
+        while not proc.ready:
+            if proc.state in ("degraded", "stopped"):
+                raise BackendUnavailable("degraded" if proc.state == "degraded" else "loading")
+            await asyncio.sleep(self.poll_s)
+
+    async def release(self) -> None:
+        async with self.cond:
+            self.inflight -= 1
+            self.cond.notify_all()
+
+
 class Supervisor:
     def __init__(
         self,
@@ -219,10 +313,30 @@ class Supervisor:
             )
             url = f"http://{settings.backend_host}:{port}"
             self.backends[name] = BackendProcess(name, argv, url, settings.supervisor, on_ready)
+        self.swapper = None
+        if profile.residency == "swap":
+            initial = profile.initial_backend or next(iter(self.backends))
+            self.swapper = Swapper(self.backends, initial, settings.supervisor.health_poll_s)
 
     def start(self) -> None:
+        if self.swapper:
+            self.swapper.start()
+            return
         for b in self.backends.values():
             b.start()
+
+    async def acquire(self, name: str) -> float:
+        """Count one request in on backend `name`; release() must follow. Returns switch seconds."""
+        if self.swapper:
+            return await self.swapper.acquire(name)
+        proc = self.backends[name]
+        if not proc.ready:
+            raise BackendUnavailable("degraded" if proc.state == "degraded" else "loading")
+        return 0.0
+
+    async def release(self, name: str) -> None:
+        if self.swapper:
+            await self.swapper.release()
 
     async def stop(self) -> None:
         await asyncio.gather(*(b.stop() for b in self.backends.values()))
@@ -230,6 +344,10 @@ class Supervisor:
     @property
     def status(self) -> str:
         states = [b.state for b in self.backends.values()]
+        if self.swapper:  # healthy while the active backend is ready or a switch is under way
+            if "degraded" in states:
+                return "degraded"
+            return "ok" if "ready" in states or self.swapper.switching else "loading"
         if all(s == "ready" for s in states):
             return "ok"
         return "degraded" if "degraded" in states else "loading"
