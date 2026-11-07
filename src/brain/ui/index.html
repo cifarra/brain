@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>brain</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='7' fill='%236d5dfc'/></svg>">
+<style>
+:root {
+  --bg: #fafafa; --panel: #fff; --fg: #1b1b1f; --muted: #6b6b76; --line: #e4e4ea;
+  --accent: #6d5dfc; --ok: #1f9d55; --bad: #d64545; --warn: #c98a00; --code: #f3f3f6;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #111114; --panel: #1a1a1f; --fg: #e8e8ee; --muted: #9a9aa8; --line: #2c2c34;
+          --accent: #8b7dff; --ok: #3ec27a; --bad: #ef6b6b; --warn: #e0a72a; --code: #23232a; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 2; flex-wrap: wrap; }
+header h1 { font-size: 16px; margin: 0; letter-spacing: .02em; }
+nav { display: flex; gap: 2px; }
+nav button { background: none; border: 0; padding: 6px 10px; border-radius: 6px; color: var(--muted); cursor: pointer; font: inherit; }
+nav button.on { background: var(--code); color: var(--fg); font-weight: 600; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: var(--code); color: var(--muted); font-size: 12px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.dot.ok { background: var(--ok); } .dot.bad { background: var(--bad); } .dot.warn { background: var(--warn); }
+.spacer { flex: 1; }
+main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+section[hidden] { display: none; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+label { color: var(--muted); font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+input, select, textarea, button { font: inherit; color: var(--fg); }
+input[type=number], input[type=text], input[type=password], select, textarea { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+input[type=number] { width: 80px; }
+textarea { width: 100%; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+button.b { background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 6px 14px; cursor: pointer; }
+button.b:disabled { opacity: .5; cursor: default; }
+button.g { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+.muted { color: var(--muted); } .small { font-size: 12px; } .ok { color: var(--ok); } .bad { color: var(--bad); }
+pre { background: var(--code); border-radius: 6px; padding: 10px; overflow: auto; font-size: 12px; margin: 6px 0; }
+.err { color: var(--bad); white-space: pre-wrap; }
+/* chat */
+#log { display: flex; flex-direction: column; gap: 10px; min-height: 120px; }
+.msg { padding: 10px 12px; border-radius: 10px; max-width: 92%; white-space: pre-wrap; word-wrap: break-word; }
+.msg.user { align-self: flex-end; background: var(--accent); color: #fff; }
+.msg.assistant { align-self: flex-start; background: var(--panel); border: 1px solid var(--line); }
+.msg img { max-width: 220px; border-radius: 6px; display: block; margin-top: 6px; }
+.msg details { margin-bottom: 6px; color: var(--muted); font-size: 12.5px; }
+.msg details summary { cursor: pointer; }
+.meta { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+.composer { display: flex; gap: 8px; align-items: flex-end; margin-top: 12px; }
+.composer textarea { font-family: inherit; font-size: 14px; }
+.thumb { position: relative; display: inline-block; }
+.thumb img { height: 48px; border-radius: 4px; }
+.thumb button { position: absolute; top: -6px; right: -6px; border-radius: 50%; border: 0; width: 18px; height: 18px; font-size: 11px; cursor: pointer; background: var(--bad); color: #fff; padding: 0; }
+.adapters { display: flex; gap: 14px; flex-wrap: wrap; }
+.adapters input[type=range] { width: 110px; }
+/* decide */
+.q { margin: 10px 0 14px; }
+.q h4 { margin: 0 0 6px; font-size: 13px; }
+.bar { display: grid; grid-template-columns: minmax(80px, 220px) 1fr 54px; gap: 8px; align-items: center; font-size: 12.5px; margin: 2px 0; }
+.bar .lab { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar .track { background: var(--code); border-radius: 4px; height: 12px; overflow: hidden; }
+.bar .fill { background: var(--accent); height: 100%; }
+.bar.top .lab { font-weight: 600; }
+.bar .num { text-align: right; font-variant-numeric: tabular-nums; }
+/* evals */
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; }
+td.n { text-align: right; font-variant-numeric: tabular-nums; }
+tr.click { cursor: pointer; } tr.click:hover { background: var(--code); }
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin: 10px 0; }
+.stat { background: var(--code); border-radius: 8px; padding: 8px 10px; }
+.stat b { display: block; font-size: 17px; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 11.5px; color: var(--muted); }
+progress { width: 160px; }
+.scroll { max-height: 520px; overflow: auto; }
+@media (max-width: 640px) { main { padding: 12px 10px; } .bar { grid-template-columns: 90px 1fr 46px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>brain</h1>
+  <nav>
+    <button data-tab="chat" class="on">Chat</button>
+    <button data-tab="decide">Decide</button>
+    <button data-tab="evals">Evals</button>
+    <button data-tab="status">Status</button>
+  </nav>
+  <span class="spacer"></span>
+  <span class="pill" id="pill"><span class="dot"></span><span>connecting…</span></span>
+  <button class="g small" id="tokbtn" title="Bearer token (only if the gateway sets BRAIN_TOKEN)">token</button>
+</header>
+<main>
+
+<section id="chat">
+  <div class="card">
+    <div class="row">
+      <label>model <select id="c-model"></select></label>
+      <label id="c-task-wrap" hidden>task <select id="c-task"></select></label>
+      <label>thinking <select id="c-think"><option value="">role default</option><option value="on">on</option><option value="off">off</option></select></label>
+      <label>temp <input type="number" id="c-temp" step="0.1" min="0" max="2" placeholder="default"></label>
+      <label>max tokens <input type="number" id="c-max" min="1" placeholder="none"></label>
+      <label><input type="checkbox" id="c-json"> JSON</label>
+    </div>
+    <div class="row" style="margin-top:8px"><span class="small muted">adapters</span><div class="adapters" id="c-adapters"></div></div>
+    <details style="margin-top:8px"><summary class="small muted">system prompt</summary><textarea id="c-system" rows="3" style="margin-top:6px;font-family:inherit"></textarea></details>
+  </div>
+  <div id="log"></div>
+  <div class="composer">
+    <div style="flex:1">
+      <div id="c-thumbs" class="row" style="margin-bottom:6px"></div>
+      <textarea id="c-input" rows="3" placeholder="Message System 2… (Enter to send, Shift+Enter for a newline, paste or attach images)"></textarea>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label class="g" style="cursor:pointer;justify-content:center;padding:5px 10px;border:1px solid var(--line);border-radius:6px">image<input type="file" id="c-file" accept="image/*" hidden multiple></label>
+      <button class="b" id="c-send">Send</button>
+      <button class="g" id="c-clear">Clear</button>
+    </div>
+  </div>
+</section>
+
+<section id="decide" hidden>
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <label>example <select id="d-example"><option value="">—</option></select></label>
+      <button class="b" id="d-run">Decide</button>
+    </div>
+    <p class="small muted" style="margin:8px 0 4px">state (the context System 1 judges)</p>
+    <textarea id="d-state" rows="7"></textarea>
+    <p class="small muted" style="margin:8px 0 4px">questions — <code>choice</code> {criteria: {option: description|null}}, <code>score</code> {criteria: [levels]}, <code>noul</code> (yes/no)</p>
+    <textarea id="d-questions" rows="9"></textarea>
+  </div>
+  <div class="card" id="d-out" hidden></div>
+</section>
+
+<section id="evals" hidden>
+  <div id="e-suites"></div>
+  <div class="card" id="e-run" hidden></div>
+</section>
+
+<section id="status" hidden>
+  <div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">Health</h3><button class="g small" id="s-refresh">refresh</button></div><div id="s-health"></div></div>
+  <div class="card"><h3 style="margin:0 0 8px">Roles</h3><div id="s-models"></div></div>
+  <div class="card"><h3 style="margin:0 0 8px">Adapters</h3><div id="s-adapters"></div></div>
+  <div class="card"><h3 style="margin:0 0 8px">Router tasks</h3><div id="s-router"></div></div>
+</section>
+
+</main>
+<script>
+"use strict";
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const store = {
+  get(k, d = null) { try { const v = localStorage.getItem("brain." + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("brain." + k, JSON.stringify(v)); } catch {} },
+};
+const fmt = (x, d = 2) => x == null || Number.isNaN(x) ? "–" : Number(x).toFixed(d);
+const secs = ms => ms == null ? "–" : (ms / 1000).toFixed(ms < 10000 ? 2 : 1) + " s";
+const median = xs => { const s = xs.filter(x => x != null).sort((a, b) => a - b); return s.length ? s[Math.floor(s.length / 2)] : null; };
+const pctl = (xs, q) => { const s = [...xs].sort((a, b) => a - b); if (!s.length) return NaN; const i = (s.length - 1) * q, lo = Math.floor(i), hi = Math.ceil(i); return s[lo] + (s[hi] - s[lo]) * (i - lo); };
+
+function headers() {
+  const h = {"content-type": "application/json"}, t = store.get("token", "");
+  if (t) h.authorization = "Bearer " + t;
+  return h;
+}
+async function api(path, body, signal) {
+  const r = await fetch(path, {method: body ? "POST" : "GET", headers: headers(), body: body && JSON.stringify(body), signal});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(j.error?.message || `HTTP ${r.status}`); e.status = r.status; e.body = j; throw e; }
+  return j;
+}
+const meta = xb => {
+  if (!xb) return "";
+  const parts = [xb.role, xb.backend_model];
+  const ad = Object.entries(xb.adapters || {}).map(([n, s]) => `${n}×${s}`).join(" + ");
+  if (ad) parts.push(ad);
+  if (xb.prompt_tokens != null) parts.push(`${xb.prompt_tokens} prompt tok`);
+  if (xb.latency_ms != null) parts.push(secs(xb.latency_ms));
+  if (xb.swap_ms) parts.push(`swap ${secs(xb.swap_ms)}`);
+  return parts.filter(Boolean).map(esc).join(" · ");
+};
+
+// ------------------------------------------------------------------ tabs, health
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll("main > section").forEach(s => s.hidden = s.id !== b.dataset.tab);
+  store.set("tab", b.dataset.tab);
+  if (b.dataset.tab === "status") loadStatus();
+  if (b.dataset.tab === "evals") loadSuites();
+  if (b.dataset.tab === "decide") loadExamples();
+});
+$("#tokbtn").onclick = () => {
+  const t = prompt("Bearer token (empty for none)", store.get("token", ""));
+  if (t !== null) { store.set("token", t.trim()); init(); }
+};
+
+let health = null;
+async function pollHealth() {
+  try {
+    const r = await fetch("/health");
+    health = await r.json();
+  } catch { health = null; }
+  const pill = $("#pill"), dot = pill.firstElementChild, txt = pill.lastElementChild;
+  if (!health) { dot.className = "dot bad"; txt.textContent = "gateway unreachable"; return; }
+  dot.className = "dot " + (health.status === "ok" ? "ok" : health.status === "degraded" ? "bad" : "warn");
+  let s = `${health.profile} · ${health.status}`;
+  const res = health.residency;
+  if (res) s += res.switching ? " · switching…" : ` · ${res.active} in memory`;
+  txt.textContent = s;
+}
+setInterval(() => { if (!document.hidden) pollHealth(); }, 3000);
+
+// ------------------------------------------------------------------ chat
+let models = [], adapters = [], router = {}, convo = [], pending = [], ctrl = null;
+
+async function init() {
+  pollHealth();
+  try {
+    [models, adapters, router] = await Promise.all([api("/v1/models").then(j => j.data), api("/v1/adapters").then(j => j.data),
+                                                   api("/v1/router").then(j => j.tasks)]);
+  } catch (e) { $("#log").innerHTML = `<div class="err">${esc(e.message)}${e.status === 401 ? " — set the token (top right)" : ""}</div>`; return; }
+  const chatRoles = models.filter(m => m.endpoint === "chat");
+  const sel = $("#c-model"), keep = store.get("chat.model", "system2");
+  sel.innerHTML = `<option value="auto">auto (router)</option>` + chatRoles.map(m => `<option>${esc(m.id)}</option>`).join("");
+  sel.value = [...sel.options].some(o => o.value === keep) ? keep : (chatRoles[0]?.id || "auto");
+  $("#c-task").innerHTML = Object.entries(router).map(([n, t]) => `<option value="${esc(n)}" title="${esc(t.description)}">${esc(n)}</option>`).join("");
+  renderAdapters();
+}
+function chatRole() {
+  const v = $("#c-model").value;
+  if (v !== "auto") return models.find(m => m.id === v);
+  const t = router[$("#c-task").value];
+  return models.find(m => m.id === t?.role);
+}
+function renderAdapters() {
+  $("#c-task-wrap").hidden = $("#c-model").value !== "auto";
+  const role = chatRole(), box = $("#c-adapters");
+  if (!role) { box.innerHTML = ""; return; }
+  const base = {...role.default_adapters, ...(($("#c-model").value === "auto" && router[$("#c-task").value]?.resolved?.adapters) || {})};
+  const usable = adapters.filter(a => a.stackable && a.loaded[role.backend] && (a.roles || []).includes(role.id));
+  box.innerHTML = usable.length ? usable.map(a => {
+    const v = base[a.name] ?? 0;
+    return `<label title="${esc(a.description)}">${esc(a.name)} <input type="range" min="${a.scale.min}" max="${a.scale.max}" step="0.05" value="${v}" data-ad="${esc(a.name)}" data-base="${v}"><b class="small">${fmt(v)}</b></label>`;
+  }).join("") : `<span class="small muted">none for this role</span>`;
+  box.querySelectorAll("input").forEach(i => i.oninput = () => i.nextElementSibling.textContent = fmt(i.value));
+}
+$("#c-model").onchange = () => { store.set("chat.model", $("#c-model").value); renderAdapters(); };
+$("#c-task").onchange = renderAdapters;
+
+function addImage(file) {
+  const img = new Image(), url = URL.createObjectURL(file);
+  img.onload = () => {
+    const k = Math.min(1, 1024 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+    c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    pending.push(c.toDataURL("image/jpeg", 0.9)); URL.revokeObjectURL(url); renderThumbs();
+  };
+  img.src = url;
+}
+function renderThumbs() {
+  $("#c-thumbs").innerHTML = pending.map((u, i) => `<span class="thumb"><img src="${u}"><button data-i="${i}">×</button></span>`).join("");
+  $("#c-thumbs").querySelectorAll("button").forEach(b => b.onclick = () => { pending.splice(+b.dataset.i, 1); renderThumbs(); });
+}
+$("#c-file").onchange = e => { [...e.target.files].forEach(addImage); e.target.value = ""; };
+$("#c-input").addEventListener("paste", e => { for (const it of e.clipboardData?.items || []) if (it.type.startsWith("image/")) addImage(it.getAsFile()); });
+$("#c-input").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); } });
+$("#c-send").onclick = () => ctrl ? ctrl.abort() : send();
+$("#c-clear").onclick = () => { convo = []; $("#log").innerHTML = ""; };
+
+function bubble(role, text, images = []) {
+  const d = document.createElement("div");
+  d.className = "msg " + role;
+  d.innerHTML = (role === "assistant" ? `<details hidden><summary>thinking</summary><div class="think"></div></details>` : "")
+    + `<div class="body">${esc(text)}</div>` + images.map(u => `<img src="${u}">`).join("") + `<div class="meta"></div>`;
+  $("#log").append(d); d.scrollIntoView({block: "end"});
+  return d;
+}
+
+async function send() {
+  const text = $("#c-input").value.trim();
+  if (!text && !pending.length) return;
+  const content = pending.length ? [{type: "text", text}, ...pending.map(u => ({type: "image_url", image_url: {url: u}}))] : text;
+  bubble("user", text, pending);
+  convo.push({role: "user", content});
+  $("#c-input").value = ""; pending = []; renderThumbs();
+
+  const body = {messages: [...($("#c-system").value.trim() ? [{role: "system", content: $("#c-system").value.trim()}] : []), ...convo],
+                stream: true, stream_options: {include_usage: true}};
+  const m = $("#c-model").value;
+  if (m === "auto") body.x_task = $("#c-task").value; else body.model = m;
+  const th = $("#c-think").value;
+  if (th) body.chat_template_kwargs = {enable_thinking: th === "on"};
+  if ($("#c-temp").value !== "") body.temperature = +$("#c-temp").value;
+  if ($("#c-max").value !== "") body.max_tokens = +$("#c-max").value;
+  if ($("#c-json").checked) body.response_format = {type: "json_object"};
+  const xa = {};
+  document.querySelectorAll("#c-adapters input").forEach(i => { if (+i.value !== +i.dataset.base) xa[i.dataset.ad] = +i.value; });
+  if (Object.keys(xa).length) body.x_adapters = xa;
+
+  const d = bubble("assistant", ""), out = $(".body", d), think = $(".think", d), det = $("details", d);
+  out.innerHTML = `<span class="muted">…</span>`;
+  ctrl = new AbortController(); $("#c-send").textContent = "Stop";
+  let answer = "", reasoning = "", xb = null, timings = null, t0 = performance.now(), first = null;
+  try {
+    const r = await fetch("/v1/chat/completions", {method: "POST", headers: headers(), body: JSON.stringify(body), signal: ctrl.signal});
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error?.message || `HTTP ${r.status}`); }
+    const reader = r.body.getReader(), dec = new TextDecoder();
+    let buf = "";
+    for (;;) {
+      const {value, done} = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, {stream: true});
+      let i;
+      while ((i = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+        if (!line.startsWith("data:")) continue;
+        const p = line.slice(5).trim();
+        if (p === "[DONE]") continue;
+        let c; try { c = JSON.parse(p); } catch { continue; }
+        if (c.error) throw new Error(c.error.message);
+        if (c.x_brain) xb = c.x_brain;
+        if (c.timings) timings = c.timings;
+        const delta = c.choices?.[0]?.delta || {};
+        if (delta.reasoning_content) { reasoning += delta.reasoning_content; det.hidden = false; think.textContent = reasoning; }
+        if (delta.content) { first ??= performance.now(); answer += delta.content; out.textContent = answer; }
+        d.scrollIntoView({block: "end"});
+      }
+    }
+    if (!answer) out.innerHTML = `<span class="muted">(no answer)</span>`;
+    if (reasoning) det.querySelector("summary").textContent = `thinking (${reasoning.length} chars)`;
+    let m2 = meta(xb);
+    if (timings) m2 += ` · ${timings.predicted_n} tok @ ${fmt(timings.predicted_per_second, 1)} tok/s · prefill ${fmt(timings.prompt_per_second, 0)} tok/s`;
+    $(".meta", d).innerHTML = m2;
+    convo.push({role: "assistant", content: answer});
+  } catch (e) {
+    if (e.name === "AbortError") { $(".meta", d).textContent = "stopped"; if (answer) convo.push({role: "assistant", content: answer}); }
+    else { out.innerHTML = `<span class="err">${esc(e.message)}</span>`; convo.pop(); }
+  } finally { ctrl = null; $("#c-send").textContent = "Send"; pollHealth(); }
+}
+
+// ------------------------------------------------------------------ decide
+const SAMPLE = {
+  state: "Support ticket from a customer:\n\"Hi, I was charged twice for my October invoice (#4471). I've attached the bank statement. Please refund the duplicate as soon as possible, rent is due Friday.\"",
+  questions: {
+    route: {type: "choice", instructions: "Which team should handle this ticket?",
+            criteria: {billing: "Payments, invoices, refunds", technical: "Bugs, outages, integrations", sales: "Plans, upgrades, quotes", other: null}},
+    urgency: {type: "score", instructions: "How urgent is this ticket?", criteria: ["not urgent", "low", "normal", "high", "critical"]},
+    refund: {type: "noul", instructions: "Is the customer asking for money back?"},
+  },
+};
+function setDecide(req) {
+  $("#d-state").value = req.state;
+  $("#d-questions").value = JSON.stringify(req.questions, null, 2);
+}
+setDecide(SAMPLE);
+let suiteCache = {};
+async function getSuite(name) { return suiteCache[name] ??= await api("/ui/evals/" + encodeURIComponent(name)); }
+async function loadExamples() {
+  const sel = $("#d-example");
+  if (sel.options.length > 1) return;
+  sel.innerHTML = `<option value="">ticket routing (sample)</option>`;
+  try {
+    const s = await getSuite("clef-calib"), seen = {};
+    for (const c of s.cases) if ((seen[c.kind] = (seen[c.kind] || 0) + 1) <= 2)
+      sel.insertAdjacentHTML("beforeend", `<option value="${esc(c.id)}">${esc(c.kind)} · ${esc(c.id)} · ${c.tokens ?? "?"} tok</option>`);
+  } catch {}
+}
+$("#d-example").onchange = async () => {
+  const id = $("#d-example").value;
+  if (!id) return setDecide(SAMPLE);
+  const c = (await getSuite("clef-calib")).cases.find(c => c.id === id);
+  if (c) setDecide(c.request);
+};
+$("#d-run").onclick = async () => {
+  const out = $("#d-out"), btn = $("#d-run");
+  let questions;
+  try { questions = JSON.parse($("#d-questions").value); } catch (e) { out.hidden = false; out.innerHTML = `<div class="err">questions: ${esc(e.message)}</div>`; return; }
+  btn.disabled = true; out.hidden = false; out.innerHTML = `<span class="muted">deciding…</span>`;
+  try {
+    const r = await api("/v1/systemone", {model: "system1", state: $("#d-state").value, questions});
+    out.innerHTML = `<div class="meta" style="margin:0 0 6px">${meta(r.x_brain)}</div>` + Object.entries(r.answers).map(([qid, a]) => {
+      const q = questions[qid] || {};
+      let probs = a.probabilities || {yes: a.noul, no: 1 - a.noul}, labels = a.legend || {};
+      const top = Object.entries(probs).reduce((x, y) => y[1] > x[1] ? y : x)[0];
+      const rows = Object.entries(probs).sort((x, y) => a.type === "score" ? +x[0] - +y[0] : y[1] - x[1]).map(([k, p]) =>
+        `<div class="bar ${k === top ? "top" : ""}"><span class="lab" title="${esc(labels[k] || k)}">${esc(labels[k] ? `${k} · ${labels[k]}` : k)}</span><span class="track"><span class="fill" style="display:block;width:${(p * 100).toFixed(1)}%"></span></span><span class="num">${(p * 100).toFixed(1)}%</span></div>`).join("");
+      const head = a.type === "choice" ? `→ <b>${esc(a.choice)}</b>` : a.type === "score" ? `→ score <b>${fmt(a.score)}</b>` : `→ p(yes) <b>${fmt(a.noul, 3)}</b>`;
+      return `<div class="q"><h4>${esc(qid)} <span class="muted" style="font-weight:400">${esc(q.instructions || "")}</span> ${head}${a.confidence != null ? ` <span class="small muted">conf ${fmt(a.confidence)}</span>` : ""}</h4>${rows}</div>`;
+    }).join("");
+  } catch (e) { out.innerHTML = `<div class="err">${esc(e.message)}</div>`; }
+  finally { btn.disabled = false; pollHealth(); }
+};
+
+// ------------------------------------------------------------------ evals
+let suites = null, running = null;
+async function loadSuites() {
+  if (suites) return;
+  const box = $("#e-suites");
+  try { suites = (await api("/ui/evals")).data; } catch (e) { box.innerHTML = `<div class="err">${esc(e.message)}</div>`; return; }
+  box.innerHTML = suites.map(s => {
+    const last = store.get("eval." + s.name);
+    const sizes = s.n > 20 ? [10, 30, s.n].filter((x, i, a) => x <= s.n && a.indexOf(x) === i) : [s.n];
+    return `<div class="card"><div class="row" style="justify-content:space-between">
+      <div><b>${esc(s.title || s.name)}</b> <span class="small muted">${esc(s.name)} · ${s.n} cases · ${esc(s.endpoint)}</span></div>
+      <div class="row"><select data-n="${esc(s.name)}">${sizes.map(n => `<option value="${n}">${n === s.n ? "all " + n : n} cases</option>`).join("")}</select>
+      <button class="b" data-run="${esc(s.name)}">Run</button></div></div>
+      <p class="small muted" style="margin:6px 0 0">${esc(s.description || "")}</p>
+      ${last ? `<p class="small" style="margin:6px 0 0">last run ${esc(new Date(last.at).toLocaleString())} on ${esc(last.profile)}: ${last.headline} <a href="#" data-show="${esc(s.name)}">show</a></p>` : ""}</div>`;
+  }).join("") || `<div class="card muted">No eval suites in registry/evals.</div>`;
+  box.querySelectorAll("[data-run]").forEach(b => b.onclick = () => runSuite(b.dataset.run, +box.querySelector(`[data-n="${b.dataset.run}"]`).value));
+  box.querySelectorAll("[data-show]").forEach(a => a.onclick = e => { e.preventDefault(); const l = store.get("eval." + a.dataset.show); renderRun(l.suite, l.results, l, false); });
+}
+
+function probsOf(ans) {
+  const out = {};
+  for (const [q, x] of Object.entries(ans)) out[q] = x.probabilities || {true: x.noul, false: 1 - x.noul};
+  return out;
+}
+function calibCompare(results, gate) {  // == lab/exp0/analyze.py calib_compare
+  let nq = 0, scored = 0, agree = 0; const dps = [], kls = [], recs = [];
+  for (const r of results) {
+    if (!r.probs) continue;
+    let recMax = 0, ok = true;
+    for (const [q, pr] of Object.entries(r.ref)) {
+      const pc = r.probs[q] || {}, keys = Object.keys(pr);
+      const d = keys.map(k => Math.abs(pr[k] - (pc[k] ?? 0)));
+      dps.push(...d); recMax = Math.max(recMax, ...d);
+      kls.push(keys.reduce((s, k) => s + pr[k] * Math.log((pr[k] + 1e-9) / ((pc[k] ?? 0) + 1e-9)), 0));
+      const srt = Object.values(pr).sort((a, b) => b - a);
+      nq++;
+      if (srt[0] - (srt[1] ?? 0) < gate.tie) continue;
+      scored++;
+      const argmax = o => Object.keys(o).reduce((a, b) => o[b] > o[a] ? b : a);
+      const same = argmax(pr) === argmax(pc);
+      agree += same; ok &&= same;
+    }
+    r.max_dp = recMax; r.top1_ok = ok; r.pass = ok && recMax <= gate.p99;
+    recs.push(r);
+  }
+  const s = {top1: agree / Math.max(1, scored), p99_dp: pctl(dps, 0.99), max_dp: dps.length ? Math.max(...dps) : NaN,
+             mean_dp: dps.reduce((a, b) => a + b, 0) / Math.max(1, dps.length), mean_kl: kls.reduce((a, b) => a + b, 0) / Math.max(1, kls.length),
+             n_q: nq, n_scored: scored, records_pass: recs.filter(r => r.pass).length, n: recs.length};
+  s.gate = s.top1 >= gate.top1 && s.p99_dp <= gate.p99 && s.max_dp <= gate.max;
+  return s;
+}
+function chatCheck(c, text) {
+  const t = (text || "").toLowerCase();
+  if (c.contains) return c.contains.every(x => t.includes(x.toLowerCase()));
+  if (c.any) return c.any.some(x => t.includes(x.toLowerCase()));
+  if (c.regex) return new RegExp(c.regex, "i").test((text || "").trim());
+  if (c.json) {
+    try {
+      const o = JSON.parse((text || "").replace(/^\s*```(?:json)?|```\s*$/g, "").trim());
+      return Object.entries(c.json).every(([k, v]) => String(o[k]).toLowerCase() === String(v).toLowerCase());
+    } catch { return false; }
+  }
+  return false;
+}
+
+function pick(cases, n) {  // evenly spread so a small run still covers every kind
+  if (n >= cases.length) return cases;
+  const step = cases.length / n;
+  return Array.from({length: n}, (_, i) => cases[Math.floor(i * step)]);
+}
+async function runSuite(name, n) {
+  if (running) return;
+  const suite = await getSuite(name), cases = pick(suite.cases, n), results = [];
+  running = {stop: false};
+  const state = {suite: {name: suite.name, title: suite.title, endpoint: suite.endpoint, gate: suite.gate}, at: Date.now(), profile: health?.profile};
+  for (const c of cases) {
+    if (running.stop) break;
+    renderRun(state.suite, results, state, true, cases.length);
+    const t0 = performance.now(), r = {id: c.id, kind: c.kind};
+    try {
+      if (suite.endpoint === "systemone") {
+        const j = await api("/v1/systemone", {model: suite.model || "system1", ...c.request});
+        Object.assign(r, {ref: c.ref, probs: probsOf(j.answers), tokens: j.x_brain?.prompt_tokens, ms: j.x_brain?.latency_ms, swap_ms: j.x_brain?.swap_ms});
+      } else {
+        const j = await api("/v1/chat/completions", {...c.request, stream: false});
+        const msg = j.choices?.[0]?.message || {}, t = j.timings || {};
+        Object.assign(r, {text: msg.content, reasoning_chars: (msg.reasoning_content || "").length, pass: chatCheck(c.check, msg.content),
+                          check: c.check, tokens: j.usage?.prompt_tokens, gen: j.usage?.completion_tokens,
+                          gen_tps: t.predicted_per_second, pp_tps: t.prompt_per_second, ms: j.x_brain?.latency_ms, swap_ms: j.x_brain?.swap_ms});
+      }
+    } catch (e) { r.error = e.message; r.pass = false; r.ms = performance.now() - t0; }
+    results.push(r);
+  }
+  running = null;
+  renderRun(state.suite, results, state, false);
+  store.set("eval." + name, {...state, results, headline: state.headline});
+  suites = null; loadSuites();
+}
+
+function renderRun(suite, results, state, live, total) {
+  const box = $("#e-run"); box.hidden = false;
+  const lat = results.map(r => r.ms), swaps = results.filter(r => r.swap_ms).map(r => r.swap_ms), errs = results.filter(r => r.error).length;
+  let stats = [], cols, row;
+  if (suite.endpoint === "systemone") {
+    const s = calibCompare(results, suite.gate);
+    const tps = results.filter(r => r.tokens && r.ms).map(r => r.tokens / (r.ms / 1000));
+    stats = [[s.gate ? "PASS" : "FAIL", "calibration gate", s.gate ? "ok" : "bad"], [fmt(s.top1 * 100, 1) + "%", `top-1 vs BF16 (≥ ${suite.gate.top1 * 100}%)`],
+             [fmt(s.p99_dp, 3), `p99 |Δp| (≤ ${suite.gate.p99})`], [fmt(s.max_dp, 3), `max |Δp| (≤ ${suite.gate.max})`],
+             [fmt(s.mean_dp, 4), "mean |Δp|"], [`${s.records_pass}/${s.n}`, "records passing"],
+             [secs(median(lat)), "median latency"], [fmt(median(tps), 0), "median prefill tok/s"]];
+    state.headline = results.length ? `<b class="${s.gate ? "ok" : "bad"}">${s.gate ? "gate pass" : "gate fail"}</b>, top-1 ${fmt(s.top1 * 100, 1)}%, p99 |Δp| ${fmt(s.p99_dp, 3)}, max ${fmt(s.max_dp, 3)}, ${results.length} records` : "";
+    cols = ["id", "kind", "tokens", "max |Δp|", "top-1", "latency", ""];
+    row = r => [r.id, r.kind, r.tokens ?? "", r.error ? "" : fmt(r.max_dp, 3), r.error ? "" : r.top1_ok ? "✓" : "✗", secs(r.ms), r.error ? `<span class="bad">${esc(r.error)}</span>` : r.pass ? `<span class="ok">pass</span>` : `<span class="bad">fail</span>`];
+  } else {
+    const ok = results.filter(r => r.pass).length;
+    stats = [[`${ok}/${results.length}`, "passed", ok === results.length && results.length ? "ok" : "bad"], [secs(median(lat)), "median latency"],
+             [fmt(median(results.map(r => r.gen_tps)), 1), "median decode tok/s"], [fmt(median(results.map(r => r.pp_tps)), 0), "median prefill tok/s"]];
+    state.headline = results.length ? `<b class="${ok === results.length ? "ok" : "bad"}">${ok}/${results.length} passed</b>, decode ${fmt(median(results.map(r => r.gen_tps)), 1)} tok/s` : "";
+    cols = ["id", "kind", "prompt", "gen", "tok/s", "latency", "answer", ""];
+    row = r => [r.id, r.kind, r.tokens ?? "", r.gen ?? "", fmt(r.gen_tps, 1), secs(r.ms),
+                esc((r.error || r.text || "").slice(0, 90)) + (r.reasoning_chars ? ` <span class="muted small">(+${r.reasoning_chars} chars thinking)</span>` : ""),
+                r.pass ? `<span class="ok">pass</span>` : `<span class="bad">fail</span>`];
+  }
+  if (swaps.length) stats.push([secs(median(swaps)), `model swap (${swaps.length}×)`]);
+  if (errs) stats.push([String(errs), "errors", "bad"]);
+  box.innerHTML = `<div class="row" style="justify-content:space-between"><b>${esc(suite.title || suite.name)}</b>
+    <div class="row">${live ? `<progress max="${total}" value="${results.length}"></progress><span class="small muted">${results.length}/${total}</span><button class="g small" id="e-stop">stop</button>`
+      : `<span class="small muted">${esc(new Date(state.at).toLocaleString())} · ${esc(state.profile || "")}</span><button class="g small" id="e-dl">download JSON</button>`}</div></div>
+    <div class="stats">${stats.map(([v, l, c]) => `<div class="stat"><b class="${c || ""}">${v}</b><span>${esc(l)}</span></div>`).join("")}</div>
+    <div class="scroll"><table><tr>${cols.map(c => `<th>${c}</th>`).join("")}</tr>${results.map((r, i) =>
+      `<tr class="click" data-i="${i}">${row(r).map((v, j) => `<td class="${j >= 2 && j <= 5 ? "n" : ""}">${j < 2 ? esc(v) : v}</td>`).join("")}</tr>`).join("")}</table></div>
+    <pre id="e-detail" hidden></pre>`;
+  $("#e-stop") && ($("#e-stop").onclick = () => running && (running.stop = true));
+  $("#e-dl") && ($("#e-dl").onclick = () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify({...state, results}, null, 2)], {type: "application/json"}));
+    a.download = `${suite.name}-${state.profile || "brain"}-${new Date(state.at).toISOString().slice(0, 16).replace(/:/g, "")}.json`; a.click();
+  });
+  box.querySelectorAll("tr.click").forEach(tr => tr.onclick = () => {
+    const r = results[+tr.dataset.i], d = $("#e-detail");
+    const view = suite.endpoint === "systemone" && r.probs
+      ? Object.fromEntries(Object.entries(r.ref).map(([q, pr]) => [q, Object.fromEntries(Object.keys(pr).map(k => [k, `${fmt(pr[k], 3)} → ${fmt(r.probs[q]?.[k], 3)}`]))]))
+      : r;
+    d.hidden = false; d.textContent = JSON.stringify(view, null, 2);
+  });
+}
+
+// ------------------------------------------------------------------ status
+async function loadStatus() {
+  await pollHealth();
+  const h = health || {};
+  const res = h.residency ? `<p class="small">swap residency · in memory: <b>${esc(h.residency.active)}</b>${h.residency.switching ? " (switching)" : ""} · ${h.residency.switches} switches</p>` : "";
+  $("#s-health").innerHTML = `<p><b class="${h.status === "ok" ? "ok" : "bad"}">${esc(h.status || "unreachable")}</b> · profile ${esc(h.profile)} · phase ${esc(h.phase)}</p>${res}
+    <table><tr><th>backend</th><th>state</th><th>pid</th><th>restarts</th><th>last error</th></tr>${Object.entries(h.backends || {}).map(([n, b]) =>
+      `<tr><td>${esc(n)}</td><td>${esc(b.state)}</td><td>${b.pid ?? ""}</td><td>${b.restarts}</td><td class="small">${esc(b.last_error || "")}</td></tr>`).join("")}</table>
+    ${(h.warnings || []).length ? `<pre>${esc(h.warnings.join("\n"))}</pre>` : ""}`;
+  try {
+    const [m, a, r] = await Promise.all([api("/v1/models"), api("/v1/adapters"), api("/v1/router")]);
+    $("#s-models").innerHTML = `<table><tr><th>role</th><th>endpoint</th><th>backend</th><th>model</th><th>default adapters</th><th>capabilities</th></tr>${m.data.map(x =>
+      `<tr><td><b>${esc(x.id)}</b></td><td>${esc(x.endpoint)}</td><td>${esc(x.backend)} <span class="muted small">${esc(x.state)}</span></td><td>${esc(x.model.id)} <span class="muted small">${esc(x.model.quant || "")}</span></td>
+       <td>${esc(Object.entries(x.default_adapters).map(([k, v]) => `${k}×${v}`).join(", "))}</td><td class="small">${esc(Object.entries(x.capabilities).filter(([, v]) => v).map(([k, v]) => v === true ? k : `${k}=${v}`).join(", "))}</td></tr>`).join("")}</table>`;
+    $("#s-adapters").innerHTML = `<table><tr><th>adapter</th><th>kind</th><th>roles</th><th>loaded</th><th>gate</th><th>description</th></tr>${a.data.map(x =>
+      `<tr><td><b>${esc(x.name)}</b> v${esc(x.version)}</td><td>${esc(x.kind)}</td><td>${esc((x.roles || []).join(", "))}</td><td>${esc(Object.entries(x.loaded).filter(([, v]) => v).map(([k]) => k).join(", ") || "—")}</td>
+       <td class="small">${esc(typeof x.gate === "object" ? JSON.stringify(x.gate) : x.gate ?? "")}</td><td class="small">${esc(x.description)}</td></tr>`).join("")}</table>`;
+    $("#s-router").innerHTML = `<table><tr><th>task</th><th>role</th><th>adapters</th><th>description</th></tr>${Object.entries(r.tasks).map(([n, t]) =>
+      `<tr><td><b>${esc(n)}</b></td><td>${esc(t.role)}</td><td>${esc(Object.entries(t.resolved?.adapters || {}).map(([k, v]) => `${k}×${v}`).join(", ") || t.error || "")}</td><td class="small">${esc(t.description)}</td></tr>`).join("")}</table>`;
+  } catch (e) { $("#s-models").innerHTML = `<div class="err">${esc(e.message)}</div>`; }
+}
+$("#s-refresh").onclick = loadStatus;
+
+init();
+const tab = store.get("tab");
+if (tab && tab !== "chat") document.querySelector(`nav button[data-tab="${tab}"]`)?.click();
+</script>
+</body>
+</html>

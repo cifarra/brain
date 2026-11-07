@@ -1,0 +1,35 @@
+id: cerebro
+phase: A
+description: "Mac mini M4 16 GB (Metal, GPU wired limit raised to 14 GiB). Swap residency: one model in memory at a time; a request for the other backend drains, swaps (~5-10 s) and is served. S2 boots first."
+residency: swap
+initial_backend: s2
+budget: {peak_gb: 14.0}           # GiB of the 16; the largest backend counts (swap)
+max_stack: 3
+backends:
+  s1:
+    model: clef-flash-q8_0-abf16      # the only gate-passing Clef: 11.2 GiB of weights, so it needs the raised limit
+    args: {ctx: 4096, batch: 4096, ubatch: 4096, parallel: 1, flash_attn: "on", ngl: all}   # no -ot on Metal: +1 GiB CPU_REPACK
+    measured_peak_gb: null            # TODO measure (weights 10.9 + compute 1.5 expected)
+  s2:
+    model: qwen3.5-9b-q4km
+    mmproj: qwen3.5-9b-mmproj-f16
+    loras: [abliteration]
+    args: {ctx: 16384, batch: 2048, ubatch: 512, parallel: 1, flash_attn: "on", ngl: all,
+           ctx_checkpoints: 4, cache_type_k: f16, cache_type_v: f16, reasoning_format: deepseek, jinja: true}
+    measured_peak_gb: 7.65            # lab/cerebro bench: vm rise incl. vision + 2k prefill; 18 tok/s decode
+roles:
+  system1:
+    backend: s1
+    endpoint: systemone
+    default_adapters: {clef: 1.0}
+    capabilities: {systemone: true, images: false, max_prompt_tokens: 4096}
+  system2:
+    backend: s2
+    endpoint: chat
+    defaults: {thinking: true, reasoning_budget: -1}
+    default_adapters: {abliteration: 1.0}
+    capabilities: {chat: true, thinking: true, json_schema: true, vision: true, max_context: 16384}
+  system2-fast:
+    inherits: system2
+    defaults: {thinking: false}
+approved_stacks: []
