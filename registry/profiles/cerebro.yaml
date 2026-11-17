@@ -9,7 +9,8 @@ backends:
   s1:
     model: clef-flash-q8_0-abf16      # the only gate-passing Clef: 11.2 GiB of weights, so it needs the raised limit
     args: {ctx: 4096, batch: 4096, ubatch: 4096, parallel: 1, flash_attn: "on", ngl: all}   # no -ot on Metal: +1 GiB CPU_REPACK
-    measured_peak_gb: null            # TODO measure (weights 10.9 + compute 1.5 expected)
+    measured_peak_gb: 12.4            # Metal buffers: weights 10.9 + compute 1.5 GiB; system wired peaked at 13.2 of the 14 GiB limit.
+                                      # 2026-11-07 calibration through the gateway: 150/150 pass, p99 |Δp| 0.010, max 0.022 (lab/cerebro/results)
   s2:
     model: qwen3.5-9b-q4km
     mmproj: qwen3.5-9b-mmproj-f16

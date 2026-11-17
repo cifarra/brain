@@ -1,89 +1,133 @@
 # brain
 
-The lab's local LLM and decision API: one gateway, two resident llama.cpp backends.
+System 1 and System 2 for LLMs, behind one local API. It runs on a 16 GB Mac mini.
 
-- **`system1`**: Cloudflare Clef-Flash (`/v1/systemone`), which returns calibrated probabilities for typed questions in one prefill.
-- **`system2`** / **`system2-fast`**: Qwen3.5-9B with thinking, JSON output, vision and stackable **generation adapters** (`/v1/chat/completions`). Abliteration is the first adapter, and it is on by default.
+- **System 1 judges.** You send a situation and typed questions. It returns calibrated probabilities from a
+  single forward pass and generates no text. `POST /v1/systemone`, served by Cloudflare Clef-Flash.
+- **System 2 reasons.** OpenAI-compatible chat with thinking, JSON output, vision and stackable LoRA adapters.
+  `POST /v1/chat/completions`, served by Qwen3.5-9B.
 
-Clients address roles and adapter names, never model files. What runs is declared in `registry/`.
-The design is in `docs/specs/system12-api.md`. Rev 5 of that spec sets the scope implemented here.
+Clients ask for a role (`system1`, `system2`, `system2-fast`) and adapters, never for a model file. The
+`registry/` decides what runs, so a model can be swapped without changing any client.
 
-## Layout
-
+```sh
+curl localhost:8790/v1/systemone -d '{
+  "state": "Customer message: I was charged twice for my order last week and nobody has replied.",
+  "questions": {
+    "route":   {"type": "choice", "instructions": "Which team should handle this?",
+                "criteria": {"billing": null, "shipping": null, "technical": null}},
+    "angry":   {"type": "noul",   "instructions": "Is the customer angry?"},
+    "urgency": {"type": "score",  "instructions": "How urgent is this?",
+                "criteria": ["can wait", "this week", "today", "right now"]}
+  }
+}'
 ```
-src/brain/          the gateway
-  config.py         settings: env vars over an optional YAML file (BRAIN_CONFIG)
-  registry.py       model/adapter/profile/router manifests (pydantic, unknown keys are errors) + validator
-  stacks.py         adapter stacks: resolution, qualified model names, reason codes, the llama.cpp `lora` array
-  supervisor.py     llama-server argv from a profile; start/stop/restart with backoff; crash loop -> degraded
-  backends.py       async HTTP clients for the backends (SSE streaming, /lora-adapters, /health, /tokenize)
-  app.py            FastAPI routes, auth, error envelope, x_brain metadata
-  cli.py            brain serve | check | adapters list
-src/brain_client/   thin synchronous SDK with failover
-registry/           models/ adapters/ profiles/ router.yaml (paths are relative to the models dir)
-tests/              unit tests + integration tests against a fake llama-server (no GPU)
+```json
+{"answers": {
+   "route":   {"choice": "billing", "probabilities": {"billing": 0.977, "shipping": 0.015, "technical": 0.009}},
+   "angry":   {"noul": 0.42},
+   "urgency": {"score": 2.21, "probabilities": {"0": 0.029, "1": 0.155, "2": 0.391, "3": 0.425}}},
+ "x_brain": {"role": "system1", "backend_model": "clef-flash-q8_0-abf16", "latency_ms": 1578, "prompt_tokens": 324}}
 ```
+That is a real response from the Mac mini, trimmed.
+
+## On a 16 GB Mac mini
+
+Profile `cerebro` (Mac mini M4, 16 GB, Metal):
+
+| | model | peak memory | speed |
+|---|---|---|---|
+| System 1 | Clef-Flash Q8_0, attention kept in BF16 | 12.4 GiB | median 1.7 s under 1k prompt tokens, 6.3 s at ~1.4k, 13.8 s at ~2.8k |
+| System 2 | Qwen3.5-9B Q4_K_M + vision | 7.7 GiB | 18 tok/s decode |
+
+The two models don't fit together, so the gateway keeps one resident and swaps on demand, which takes about
+5 s and is reported as `x_brain.swap_ms`. Through the gateway, System 1 passes the calibration gate against
+the BF16 reference on 150 of 150 records (p99 |Δp| 0.010). macOS caps GPU memory at about 10.7 GB, so raise the limit
+to 14 GiB first: `deploy/cerebro/install.sh` sets it at every boot and runs the gateway under launchd.
+
+The same API runs on CUDA. On an RTX 4090 both models stay resident in 11.4 GiB (`ranger-12g`,
+measurements in `lab/exp0/REPORT.md`).
 
 ## Run
 
+You need Python 3.12+, [uv](https://docs.astral.sh/uv/), llama.cpp `llama-server` (b11580: calibration was
+measured on that build) and the weights.
+
 ```sh
 uv sync
-uv run pytest -q                                              # everything, no GPU needed
-uv run brain check registry/profiles/ranger-12g.yaml --no-files   # validate + print llama-server argv
-uv run brain check ranger-12g --sha256                        # on ranger: also verify file hashes (cached)
-uv run brain adapters list
-BRAIN_MODELS_DIR=~/srv/models uv run brain serve              # gateway on :8790
+uv run pytest -q                         # no GPU or weights needed
+uv run brain check cerebro               # validate the profile, list missing files, print the llama-server argv
+BRAIN_PROFILE=cerebro BRAIN_MODELS_DIR=~/models uv run brain serve     # :8790, web UI at /ui/
 ```
+
+The weights are not in the repo. Each manifest in `registry/models/` names its upstream repo, revision,
+path and sha256. The calibrated Clef is a derived quant, and its `llama-quantize` recipe is in its manifest.
+The abliteration adapter is built by `tools/extract_adapter/`.
 
 | Env | Default | |
 |---|---|---|
-| `BRAIN_PROFILE` | `ranger-12g` | profile id |
+| `BRAIN_PROFILE` | `ranger-12g` | profile in `registry/profiles/` |
 | `BRAIN_REGISTRY` | `./registry` | registry dir |
-| `BRAIN_MODELS_DIR` | `/models` | root for manifest file paths (ranger: `~/srv/models` mounted at `/models`) |
-| `BRAIN_LLAMA_SERVER` | `llama-server` | binary (CUDA image on ranger, `brew install llama.cpp` on a Mac) |
-| `BRAIN_TOKEN` | unset | one optional bearer token; unset means no auth. `/health` is always open |
-| `BRAIN_HOST` / `BRAIN_PORT` | `0.0.0.0` / `8790` | gateway listen address |
-| `BRAIN_BACKEND_PORT_BASE` | `8791` | backends listen on 127.0.0.1 at base, base+1, ... in profile order |
-| `BRAIN_CONFIG` | unset | YAML with the same keys plus `supervisor:` (backoff, crash loop, timeouts) and `backend_ports:` |
-
-`brain serve` refuses to start if the profile does not validate. Both backends are always resident. `/health` reports `loading` until both are ready, and `degraded` after a crash loop (5 crashes in 10 minutes). After a crash loop, run `docker compose restart brain`.
+| `BRAIN_MODELS_DIR` | `/models` | root for the manifest file paths |
+| `BRAIN_LLAMA_SERVER` | `llama-server` | binary |
+| `BRAIN_TOKEN` | unset | optional bearer token. `/health` is always open |
+| `BRAIN_HOST` / `BRAIN_PORT` | `127.0.0.1` / `8790` | gateway address. Set a token before binding `0.0.0.0` |
+| `BRAIN_BACKEND_PORT_BASE` | `8791` | llama-server backends listen on 127.0.0.1 at base, base+1, ... |
+| `BRAIN_CONFIG` | unset | YAML with the same keys plus supervisor timeouts |
 
 ## API
 
 | Endpoint | |
 |---|---|
-| `POST /v1/systemone` | Clef decision: `{state, images?, questions}`. `x_adapters` may only name `clef`. An oversized prompt returns 400 `context_length_exceeded` (`count`, `limit`) |
-| `POST /v1/chat/completions` | OpenAI chat, SSE streaming, `response_format`, `image_url` (base64 data URLs only), `chat_template_kwargs` |
-| `GET /v1/models`, `/v1/adapters`, `/v1/router` | roles and concrete models, the adapter registry with `loaded` per backend, router tasks |
-| `GET /health` | `{status: ok/loading/degraded, backends, warnings}`. Returns 200 with the literal `BRAIN_OK` when ok, otherwise 503 with `BRAIN_DOWN:<status>` |
+| `POST /v1/systemone` | System 1: `{state, questions}` → probabilities per question |
+| `POST /v1/chat/completions` | System 2: OpenAI chat, SSE streaming, `response_format`, `image_url` (base64 data URLs) |
+| `GET /v1/models`, `/v1/adapters`, `/v1/router` | roles and their models, adapters, router tasks |
+| `GET /health` | 200 `BRAIN_OK` when ready, otherwise 503 `BRAIN_DOWN:<status>` |
+| `GET /ui/` | web UI: chat, decide, evals, status |
 
-Chat extensions:
+System 1 question types: `choice` returns a distribution over the named options. `noul` returns the probability
+that the statement is true. `score` returns a distribution over up to 10 ordered levels, plus the expected level.
 
-- `x_adapters: {name: scale}`, which merges over the role default; scale 0 removes an adapter.
-- `x_adapters_mode: "replace"`.
-- Qualified model names `system2+abliteration@0.5` and `system2+none`. Sending a qualified name and `x_adapters` together is a 400 `ambiguous_adapters`.
-- `x_task` (router), and `x_thinking_budget`, which maps to `reasoning_budget_tokens`.
+System 2 extensions to the OpenAI request:
 
-Raw `lora`, `id_slot`, `tools`, `n>1` and unknown `x_*` fields are rejected.
+- `model`: `system2` (thinking on), `system2-fast` (thinking off), or a qualified name such as
+  `system2+abliteration@0.5` or `system2+none`.
+- `x_adapters: {name: scale}` merges over the role's default stack. A scale of 0 removes an adapter, and
+  `x_adapters_mode: "replace"` replaces the whole stack.
+- `x_task` picks a task from `registry/router.yaml`, and `x_thinking_budget` caps the reasoning tokens.
 
-The stack is resolved as role default ⊕ router task ⊕ request. It is validated before any backend call, and an invalid stack returns `400 invalid_adapter` with one of these `reason` codes: `unknown`, `not_loaded`, `role`, `base_mismatch`, `scale_range`, `incompatible`, `missing_requirement`, `exclusive_group`, `stack_too_large`, `gate`.
+System 2 applies the abliteration adapter (rank-1, refusal direction removed) by default. Use `system2+none` to
+get the stock model. An invalid adapter stack fails before any backend call, with `400 invalid_adapter` and a
+`reason` code. Every response carries `x_brain`: profile, role, backend model, adapters, latency and prompt
+tokens. With SSE, `x_brain` arrives in a final chunk just before `[DONE]`.
 
-The backend always receives `lora: [{id, scale}]` for **every** adapter it has loaded, with an explicit 0 for inactive ones. The ids come from `GET /lora-adapters` and are checked against the preload paths at startup.
-
-A stack is **evaluated** when every adapter's gate has passed and the stack is a single adapter or appears in the profile's `approved_stacks`. Unevaluated stacks are served and flagged with `x_brain.stack_evaluated: false`.
-
-Every JSON response carries `x_brain`: `profile`, `phase`, `role`, `backend`, `backend_model`, `adapters`, `stack_evaluated`, `route`, `latency_ms` and `prompt_tokens`. For SSE, `x_brain` comes in an extra final chunk (`choices: []`) just before `data: [DONE]`.
-
-## SDK
+## Python client
 
 ```python
 from brain_client import Client
 
-c = Client(["https://brain.hx", "http://127.0.0.1:8790"], token="...")
+c = Client(["http://mac-mini.local:8790", "http://127.0.0.1:8790"], token="...")
 r = c.decide({"state": "...", "questions": {"q": {"type": "noul", "instructions": "..."}}})
-r = c.chat([{"role": "user", "content": "hi"}], adapters={"abliteration": 0.5}, thinking=False)
-print(r.served_by, r.adapters, r["choices"][0]["message"]["content"])
+r = c.chat([{"role": "user", "content": "hi"}], thinking=False)
 for chunk in c.chat(messages, task="translate", stream=True): ...
 ```
 
-The SDK fails over to the next endpoint on connection errors and on 503, never on any other 4xx or 5xx. After a failover it sticks to the working endpoint for 5 minutes.
+The client fails over to the next endpoint on connection errors and on 503, and stays on the working one for
+5 minutes.
+
+## Layout
+
+```
+src/brain/          gateway: registry validation, adapter stacks, llama-server supervisor, FastAPI app, web UI
+src/brain_client/   Python client
+registry/           models, adapters, profiles, router tasks, eval suites
+deploy/cerebro/     16 GB Mac mini: launchd + GPU memory limit
+deploy/ranger/      CUDA host: Docker
+lab/                measurements behind the profiles
+tools/              adapter extraction, eval builder
+```
+
+## License
+
+Apache 2.0. The models are separate downloads under their own licenses. Clef-Flash, Qwen3.5-9B and the
+abliterated checkpoint are each Apache 2.0.

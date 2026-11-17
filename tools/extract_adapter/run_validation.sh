@@ -7,8 +7,8 @@
 # Override with env: BASE_GGUF, MERGED_GGUF, STOCK_LOCAL_GGUF (optional), ADAPTER, OUT, IMAGE, PORT.
 set -euo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
-M=/home/ale/srv/models
-LAB=/home/ale/srv/brain-lab
+M=${BRAIN_MODELS:-$HOME/srv/models}
+LAB=${BRAIN_LAB:-$HOME/srv/brain-lab}
 BASE_GGUF=${BASE_GGUF:-$M/gguf/qwen3.5-9b/Qwen3.5-9B-Q8_0.gguf}
 MERGED_GGUF=${MERGED_GGUF:-$LAB/abliteration/wangzhang-merged-Q8_0.gguf}
 STOCK_LOCAL_GGUF=${STOCK_LOCAL_GGUF:-$LAB/abliteration/stock-local-Q8_0.gguf}

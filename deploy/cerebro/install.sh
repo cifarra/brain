@@ -1,11 +1,11 @@
 #!/bin/bash
-# One-time root setup on cerebro: GPU wired limit 14 GiB (at every boot), the gateway as a
-# LaunchDaemon running as cucostudio (starts at boot, restarts on exit), and log rotation.
+# One-time root setup on a 16 GB Mac: GPU wired limit 14 GiB (at every boot), the gateway as a
+# LaunchDaemon running as the invoking user (starts at boot, restarts on exit), and log rotation.
 #   sudo ~/srv/brain-src/deploy/cerebro/install.sh            install / refresh
 #   sudo ~/srv/brain-src/deploy/cerebro/install.sh --remove   undo all of it
 set -euo pipefail
 [ "$(id -u)" = 0 ] || { echo "run with sudo"; exit 1; }
-U=cucostudio; B=/Users/$U/srv
+U=${BRAIN_USER:-${SUDO_USER:?run with sudo from the account that owns ~/srv}}; B=/Users/$U/srv
 GPU=/Library/LaunchDaemons/local.brain.gpu-memory-limit.plist
 GW=/Library/LaunchDaemons/local.brain.gateway.plist
 ROT=/etc/newsyslog.d/local.brain.conf

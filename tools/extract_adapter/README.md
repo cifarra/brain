@@ -1,8 +1,8 @@
 # extract_adapter
 
 Turn "a fine-tuned or edited checkpoint" into "the base checkpoint + a LoRA adapter" that
-llama.cpp can switch on and off per request. The first user is the abliteration adapter for S2
-(spec `docs/specs/system12-api.md`, A8); the same tool will extract the Clef LoRA (rank 256) later.
+llama.cpp can switch on and off per request. The first user is the abliteration adapter for S2;
+the same tool will extract the Clef LoRA (rank 256) later.
 
 | File | What it does |
 |---|---|

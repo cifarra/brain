@@ -28,7 +28,7 @@ class Settings(Strict):
     models_dir: Path = Path("/models")
     llama_server: str = "llama-server"  # binary on PATH, or an absolute path
     token: str | None = None  # single optional bearer token; None => no auth
-    host: str = "0.0.0.0"
+    host: str = "127.0.0.1"  # loopback by default; deployments opt in to 0.0.0.0
     port: int = 8790
     backend_host: str = "127.0.0.1"
     backend_port_base: int = 8791  # backends get base, base+1, ... in profile order

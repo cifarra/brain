@@ -87,6 +87,7 @@ def test_systemone_happy_path(gw):
     xb = data["x_brain"]
     assert xb["profile"] == "ranger-dev" and xb["adapters"] == {"clef": 1.0} and xb["backend"] == "s1"
     assert xb["latency_ms"] >= 0 and xb["prompt_tokens"] > 0
+    assert data["model"] == xb["backend_model"]  # the registry id, never the backend's file path
     sent = last_body(gw, "s1")
     assert set(sent) == {"state", "questions"}  # no model, no x_*
 

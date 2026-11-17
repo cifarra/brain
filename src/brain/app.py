@@ -266,6 +266,7 @@ class Brain:
         if r.status_code != 200:
             raise backend_error(r)
         data = r.json()
+        data["model"] = self.profile.backends[role.backend].model  # llama-server reports its file path
         xb = self.x_brain(role, stack, None)
         xb.update(latency_ms=ms(t0), prompt_tokens=(data.get("usage") or {}).get("input_tokens"))
         if swap_s:

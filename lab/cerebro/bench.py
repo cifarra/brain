@@ -3,6 +3,7 @@
 
   bench.py s1 --model M [--flags "..."] [--limit N]    Clef: calibration records + latency + memory
   bench.py s2 --model M [--mmproj F] [--lora F] [--flags "..."]   Qwen: decode/prefill/vision/thinking
+  bench.py s1 --url http://127.0.0.1:8790 --name N     the same S1 records through a running gateway
 
 Memory is reported three ways: llama.cpp's own buffer sizes (from its log), peak RSS of the
 server process, and the peak rise of system wired+active+compressed pages (vm_stat).
@@ -11,6 +12,7 @@ same format as lab/exp0/results/calib, so lab/exp0/analyze.py can compare them t
 
 import argparse
 import base64
+import contextlib
 import json
 import os
 import re
@@ -122,14 +124,19 @@ def cmd_s1(a):
     recs = [json.loads(l) for l in open(HERE.parent / "exp0/data/clef_records.jsonl")]
     if a.limit:
         recs = recs[: a.limit]
-    argv = [SERVER, "-m", os.path.expanduser(a.model)] + shlex.split(a.flags)
+    global URL
     calib = HERE / "results" / f"{a.name}.calib.jsonl"
-    calib.parent.mkdir(exist_ok=True)
     lat = []
-    with Server(argv, HERE / "results" / f"{a.name}.log") as srv, open(calib, "w") as f:
+    if a.url:  # a running gateway: no server of our own, so no memory numbers
+        URL, server = a.url.rstrip("/"), contextlib.nullcontext()
+    else:
+        server = Server([SERVER, "-m", os.path.expanduser(a.model)] + shlex.split(a.flags), HERE / "results" / f"{a.name}.log")
+    with server as srv, open(calib, "w") as f:
         for rec in recs:
             code, dt, body = post("/v1/systemone", rec["request"])
             line = {"id": rec["id"], "kind": rec["kind"], "code": code, "latency_s": dt}
+            if code == 200 and "x_brain" in body:
+                line["swap_ms"] = body["x_brain"].get("swap_ms")
             if code == 200:
                 line["input_tokens"] = body["usage"]["input_tokens"]
                 line["probs"] = {q: (x["probabilities"] if "probabilities" in x else {"true": x["noul"], "false": 1 - x["noul"]})
@@ -139,7 +146,7 @@ def cmd_s1(a):
                 line["error"] = str(body)[:300]
             f.write(json.dumps(line) + "\n")
             print(rec["id"], code, f"{dt:.2f}s", line.get("input_tokens"), flush=True)
-        mem = srv.memory()
+        mem = srv.memory() if srv else {}
     lat.sort()
     buckets = {"<500": [], "500-1k": [], "1k-2k": [], "2k-4k": []}
     for n, dt in lat:
@@ -200,10 +207,11 @@ def main():
     for n in ("s1", "s2"):
         p = sub.add_parser(n)
         p.add_argument("--name", required=True)
-        p.add_argument("--model", required=True)
+        p.add_argument("--model", required=(n == "s2"))
         p.add_argument("--flags", default="")
         if n == "s1":
             p.add_argument("--limit", type=int, default=0)
+            p.add_argument("--url", help="drive a running gateway instead of starting llama-server")
         else:
             p.add_argument("--mmproj")
             p.add_argument("--lora")

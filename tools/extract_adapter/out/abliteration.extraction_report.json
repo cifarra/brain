@@ -11,7 +11,7 @@
     ]
   },
   "base": {
-    "dir": "/home/ale/srv/models/hf/qwen3.5-9b",
+    "dir": "~/srv/models/hf/qwen3.5-9b",
     "id": "Qwen/Qwen3.5-9B",
     "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
     "index_sha256": "26d3539b516be613f39563617cb9d33b3f83d401298125be392c80cefb8f7fe5",
@@ -29,7 +29,7 @@
     }
   },
   "source": {
-    "dir": "/home/ale/srv/models/hf/qwen3.5-9b-abliterated-wangzhang",
+    "dir": "~/srv/models/hf/qwen3.5-9b-abliterated-wangzhang",
     "id": "wangzhang/Qwen3.5-9B-abliterated",
     "revision": "f8770a7aefbb15e1ae7c7945be3c01ec010ddac1",
     "file_sha256": {

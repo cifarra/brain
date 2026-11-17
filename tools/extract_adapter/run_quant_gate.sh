@@ -7,7 +7,7 @@
 #   tools/extract_adapter/run_quant_gate.sh [quants=Q4_K_M,Q5_K_M,Q6_K,IQ4_XS]
 set -euo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
-M=/home/ale/srv/models; LAB=/home/ale/srv/brain-lab
+M=${BRAIN_MODELS:-$HOME/srv/models}; LAB=${BRAIN_LAB:-$HOME/srv/brain-lab}
 GG=$M/gguf/qwen3.5-9b
 MERGED_GGUF=${MERGED_GGUF:-$LAB/abliteration/wangzhang-merged-Q8_0.gguf}
 ADAPTER=${ADAPTER:-$M/adapters/abliteration-wangzhang-r1.gguf}

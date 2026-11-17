@@ -13,3 +13,5 @@ build/
 lab/**/runs/
 .env
 deploy/ranger/config/tokens.yaml
+# internal planning notes, kept local
+docs/specs/

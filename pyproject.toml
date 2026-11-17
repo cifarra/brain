@@ -1,7 +1,7 @@
 [project]
 name = "brain"
 version = "0.1.0"
-description = "brain: a local System 1 (Clef decisions) / System 2 (Qwen + adapters) gateway over llama.cpp"
+description = "System 1 and System 2 for LLMs behind one local API: calibrated decisions (Clef) and reasoning (Qwen3.5 + adapters) over llama.cpp"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "Apache-2.0"
@@ -28,5 +28,5 @@ packages = ["src/brain", "src/brain_client"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["gpu: needs the real GPU host (ranger)"]
+markers = ["gpu: needs a real GPU host"]
 addopts = "-m 'not gpu'"
